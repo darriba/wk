@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atari 2600 Screenshot Quiz (Large List)</title>
+    <style>
+        /* CSS identical to the previous version */
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #111;
+            color: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #game-container {
+            background-color: #222;
+            border: 4px solid #888;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            color: #ffa500; /* Orange */
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px #000;
+        }
+
+        #question-area {
+            min-height: 210px; /* Ensure space for image */
+            margin-bottom: 25px;
+            background-color: #000;
+            border: 2px solid #555;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #question-image {
+            display: block;
+            max-width: 95%;
+            max-height: 190px;
+            object-fit: contain;
+            margin: auto;
+            border: 1px solid #444;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        #answer-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            background-color: #444;
+            color: #fff;
+            border: 2px solid #777;
+            padding: 15px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8em;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: #555;
+            transform: scale(1.02);
+        }
+
+        .btn:active:not(:disabled) {
+             transform: scale(0.98);
+        }
+
+        .btn.correct {
+            background-color: #00a000;
+            border-color: #00d000;
+            color: #fff;
+        }
+
+        .btn.incorrect {
+            background-color: #a00000;
+            border-color: #d00000;
+            color: #fff;
+        }
+
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        #results-area {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #333;
+            border: 2px solid #666;
+            border-radius: 5px;
+        }
+
+        #score {
+             font-size: 1.2em;
+             margin-bottom: 20px;
+             color: #ffff00;
+        }
+
+        #restart-btn {
+            background-color: #ffa500;
+            color: #000;
+            font-size: 1em;
+            padding: 15px 25px;
+        }
+         #restart-btn:hover {
+             background-color: #ffc500;
+         }
+
+        .hidden {
+            display: none;
+        }
+
+        #question-counter {
+            margin-bottom: 15px;
+            font-size: 0.8em;
+            color: #aaa;
+        }
+
+         #fallback-text {
+            font-size: 0.9em;
+            line-height: 1.6;
+            color: #f00;
+            padding: 10px;
+         }
+
+        @media (max-width: 480px) {
+             h1 { font-size: 1.2em; }
+            .btn { font-size: 0.7em; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>Atari 2600 Screenshot Quiz</h1>
+        <p style="font-size: 0.7em; color: #ccc; margin-bottom: 15px;">Guess the game from the screenshot!</p>
+
+
+        <div id="quiz-area">
+            <div id="question-counter">Question X of 10</div>
+            <div id="question-area">
+                <img id="question-image" src="" alt="Atari Game Screenshot" class="hidden">
+                <p id="fallback-text" class="hidden"></p>
+            </div>
+            <div id="answer-buttons">
+                <button class="btn" id="btn0">Answer 1</button>
+                <button class="btn" id="btn1">Answer 2</button>
+                <button class="btn" id="btn2">Answer 3</button>
+            </div>
+        </div>
+
+        <div id="results-area" class="hidden">
+            <h2>Game Over!</h2>
+            <p id="score">Your Score: 0%</p>
+            <button class="btn" id="restart-btn">Play Again?</button>
+        </div>
+    </div>
+
+    <script>
+        const questionArea = document.getElementById('question-area');
+        const questionImage = document.getElementById('question-image');
+        const fallbackTextElement = document.getElementById('fallback-text');
+        const answerButtonsElement = document.getElementById('answer-buttons');
+        const answerButtons = [
+            document.getElementById('btn0'),
+            document.getElementById('btn1'),
+            document.getElementById('btn2')
+        ];
+        const resultsArea = document.getElementById('results-area');
+        const scoreElement = document.getElementById('score');
+        const restartButton = document.getElementById('restart-btn');
+        const quizArea = document.getElementById('quiz-area');
+        const questionCounterElement = document.getElementById('question-counter');
+
+        // ---------------------------------------------------------------------
+        // --- CRITICAL WARNING ---
+        // ---------------------------------------------------------------------
+        // The following list contains over 200 Atari 2600 game entries.
+        // The 'content' URLs are AUTOMATICALLY GENERATED GUESSES based on common
+        // AtariAge patterns (e.g., s_GameName_1.png).
+        //
+        // *** YOU MUST MANUALLY VERIFY AND CORRECT EACH URL ***
+        //
+        // 1. Go to AtariAge (https://atariage.com/system_items.php?SystemID=2600&itemTypeID=SCREENSHOT)
+        // 2. Find the specific game.
+        // 3. Find a suitable screenshot.
+        // 4. Right-click the screenshot -> "Copy Image Address" (or similar).
+        // 5. Replace the placeholder 'content' URL below with the correct one.
+        //
+        // The 'descriptionForAlt' fields are also generic placeholders.
+        // You should update them to accurately describe the specific screenshot you choose.
+        // Failure to verify URLs will result in many broken images in the quiz.
+        // ---------------------------------------------------------------------
+
+        const gameQuestions = [
+            // --- START OF MANUALLY VERIFY/CORRECT SECTION ---
+            { content: "https://atariage.com/2600/screenshots/s_Adventure_1.png", descriptionForAlt: "Screenshot of Adventure", options: ["Haunted House", "Adventure", "Superman"], correctAnswer: "Adventure" },
+            { content: "https://atariage.com/2600/screenshots/s_AirRaiders_1.png", descriptionForAlt: "Screenshot of Air Raiders", options: ["Air Raiders", "River Raid", "Chopper Command"], correctAnswer: "Air Raiders" },
+            { content: "https://atariage.com/2600/screenshots/s_AirSeaBattle_1.png", descriptionForAlt: "Screenshot of Air-Sea Battle", options: ["Combat", "Air-Sea Battle", "Seaquest"], correctAnswer: "Air-Sea Battle" },
+            { content: "https://atariage.com/2600/screenshots/s_AlphaBeamWithErnie_1.png", descriptionForAlt: "Screenshot of Alpha Beam With Ernie", options: ["Cookie Monster Munch", "Big Bird's Egg Catch", "Alpha Beam With Ernie"], correctAnswer: "Alpha Beam With Ernie" },
+            { content: "https://atariage.com/2600/screenshots/s_Amidar_1.png", descriptionForAlt: "Screenshot of Amidar", options: ["Amidar", "Tutankham", "Pac-Man"], correctAnswer: "Amidar" },
+            { content: "https://atariage.com/2600/screenshots/s_ArmorAmbush_1.png", descriptionForAlt: "Screenshot of Armor Ambush", options: ["Combat", "Armor Ambush", "Battlezone"], correctAnswer: "Armor Ambush" },
+            { content: "https://atariage.com/2600/screenshots/s_Asteroids_1.png", descriptionForAlt: "Screenshot of Asteroids", options: ["Space Invaders", "Asteroids", "Gravitar"], correctAnswer: "Asteroids" },
+            { content: "https://atariage.com/2600/screenshots/s_Astroblast_1.png", descriptionForAlt: "Screenshot of Astroblast", options: ["Astroblast", "Megamania", "Space Attack"], correctAnswer: "Astroblast" },
+            { content: "https://atariage.com/2600/screenshots/s_Atlantis_1.png", descriptionForAlt: "Screenshot of Atlantis", options: ["Cosmic Ark", "Atlantis", "Missile Command"], correctAnswer: "Atlantis" },
+            { content: "https://atariage.com/2600/screenshots/s_ETTheExtraTerrestrial_1.png", descriptionForAlt: "Screenshot of E.T. The Extra-Terrestrial", options: ["Raiders of the Lost Ark", "E.T. The Extra-Terrestrial", "Superman"], correctAnswer: "E.T. The Extra-Terrestrial" },
+            { content: "https://atariage.com/2600/screenshots/s_Barnstorming_1.png", descriptionForAlt: "Screenshot of Barnstorming", options: ["Sky Jinks", "Barnstorming", "Chopper Command"], correctAnswer: "Barnstorming" },
+            { content: "https://atariage.com/2600/screenshots/s_Basketball_1.png", descriptionForAlt: "Screenshot of Basketball", options: ["RealSports Basketball", "Basketball", "Double Dunk"], correctAnswer: "Basketball" },
+            { content: "https://atariage.com/2600/screenshots/s_Battlezone_1.png", descriptionForAlt: "Screenshot of Battlezone", options: ["Robot Tank", "Battlezone", "Stellar Track"], correctAnswer: "Battlezone" },
+            { content: "https://atariage.com/2600/screenshots/s_Beamrider_1.png", descriptionForAlt: "Screenshot of Beamrider", options: ["Space Attack", "Beamrider", "Buck Rogers"], correctAnswer: "Beamrider" },
+            { content: "https://atariage.com/2600/screenshots/s_Berzerk_1.png", descriptionForAlt: "Screenshot of Berzerk", options: ["Venture", "Wizard of Wor", "Berzerk"], correctAnswer: "Berzerk" },
+            { content: "https://atariage.com/2600/screenshots/s_BigBirdsEggCatch_1.png", descriptionForAlt: "Screenshot of Big Bird's Egg Catch", options: ["Big Bird's Egg Catch", "Cookie Monster Munch", "Grover's Music Maker"], correctAnswer: "Big Bird's Egg Catch" },
+            { content: "https://atariage.com/2600/screenshots/s_Blackjack_1.png", descriptionForAlt: "Screenshot of Blackjack", options: ["Casino", "Video Poker", "Blackjack"], correctAnswer: "Blackjack" },
+            { content: "https://atariage.com/2600/screenshots/s_BluePrint_1.png", descriptionForAlt: "Screenshot of Blue Print", options: ["Mouse Trap", "Blue Print", "Lady Bug"], correctAnswer: "Blue Print" },
+            { content: "https://atariage.com/2600/screenshots/s_Bowling_1.png", descriptionForAlt: "Screenshot of Bowling", options: ["RealSports Bowling", "Bowling", "Golf"], correctAnswer: "Bowling" },
+            { content: "https://atariage.com/2600/screenshots/s_Boxing_1.png", descriptionForAlt: "Screenshot of Boxing", options: ["RealSports Boxing", "Title Match Pro Boxing", "Boxing"], correctAnswer: "Boxing" },
+            { content: "https://atariage.com/2600/screenshots/s_Breakout_1.png", descriptionForAlt: "Screenshot of Breakout", options: ["Super Breakout", "Warlords", "Breakout"], correctAnswer: "Breakout" },
+            { content: "https://atariage.com/2600/screenshots/s_BuckRogersPlanetOfZoom_1.png", descriptionForAlt: "Screenshot of Buck Rogers: Planet of Zoom", options: ["Zaxxon", "Buck Rogers: Planet of Zoom", "Star Raiders"], correctAnswer: "Buck Rogers: Planet of Zoom" },
+            { content: "https://atariage.com/2600/screenshots/s_BumpNJump_1.png", descriptionForAlt: "Screenshot of Bump 'N' Jump", options: ["Spy Hunter", "Pole Position", "Bump 'N' Jump"], correctAnswer: "Bump 'N' Jump" },
+            { content: "https://atariage.com/2600/screenshots/s_BurgerTime_1.png", descriptionForAlt: "Screenshot of BurgerTime", options: ["BurgerTime", "Pressure Cooker", "Fast Food"], correctAnswer: "BurgerTime" },
+            { content: "https://atariage.com/2600/screenshots/s_CaliforniaGames_1.png", descriptionForAlt: "Screenshot of California Games", options: ["Summer Games", "Winter Games", "California Games"], correctAnswer: "California Games" },
+            { content: "https://atariage.com/2600/screenshots/s_CanyonBomber_1.png", descriptionForAlt: "Screenshot of Canyon Bomber", options: ["Air-Sea Battle", "Canyon Bomber", "Sky Diver"], correctAnswer: "Canyon Bomber" },
+            { content: "https://atariage.com/2600/screenshots/s_Carnival_1.png", descriptionForAlt: "Screenshot of Carnival", options: ["Circus Atari", "Carnival", "Demons to Diamonds"], correctAnswer: "Carnival" },
+            { content: "https://atariage.com/2600/screenshots/s_Centipede_1.png", descriptionForAlt: "Screenshot of Centipede", options: ["Millipede", "Galaga", "Centipede"], correctAnswer: "Centipede" },
+            { content: "https://atariage.com/2600/screenshots/s_ChampionshipSoccer_1.png", descriptionForAlt: "Screenshot of Championship Soccer", options: ["RealSports Soccer", "Pele's Soccer", "Championship Soccer"], correctAnswer: "Championship Soccer" },
+            { content: "https://atariage.com/2600/screenshots/s_ChopperCommand_1.png", descriptionForAlt: "Screenshot of Chopper Command", options: ["Defender", "Chopper Command", "River Raid"], correctAnswer: "Chopper Command" },
+            { content: "https://atariage.com/2600/screenshots/s_CircusAtari_1.png", descriptionForAlt: "Screenshot of Circus Atari", options: ["Clown Downtown", "Circus Atari", "Kaboom!"], correctAnswer: "Circus Atari" },
+            { content: "https://atariage.com/2600/screenshots/s_Codebreaker_1.png", descriptionForAlt: "Screenshot of Codebreaker", options: ["Concentration", "Codebreaker", "Hangman"], correctAnswer: "Codebreaker" },
+            { content: "https://atariage.com/2600/screenshots/s_Combat_1.png", descriptionForAlt: "Screenshot of Combat", options: ["Tank Plus", "Combat", "Armor Ambush"], correctAnswer: "Combat" },
+            { content: "https://atariage.com/2600/screenshots/s_Commando_1.png", descriptionForAlt: "Screenshot of Commando", options: ["Ikari Warriors", "Rambo", "Commando"], correctAnswer: "Commando" },
+            { content: "https://atariage.com/2600/screenshots/s_CommunistMutantsFromSpace_1.png", descriptionForAlt: "Screenshot of Communist Mutants From Space", options: ["Communist Mutants From Space", "Space Invaders", "Attack of the Timelord!"], correctAnswer: "Communist Mutants From Space" },
+            { content: "https://atariage.com/2600/screenshots/s_Concentration_1.png", descriptionForAlt: "Screenshot of Concentration", options: ["Memory Match", "Codebreaker", "Concentration"], correctAnswer: "Concentration" },
+            { content: "https://atariage.com/2600/screenshots/s_CongoBongo_1.png", descriptionForAlt: "Screenshot of Congo Bongo", options: ["Donkey Kong Jr.", "Congo Bongo", "Popeye"], correctAnswer: "Congo Bongo" },
+            { content: "https://atariage.com/2600/screenshots/s_CookieMonsterMunch_1.png", descriptionForAlt: "Screenshot of Cookie Monster Munch", options: ["Alpha Beam with Ernie", "Cookie Monster Munch", "Fast Food"], correctAnswer: "Cookie Monster Munch" },
+            { content: "https://atariage.com/2600/screenshots/s_CosmicArk_1.png", descriptionForAlt: "Screenshot of Cosmic Ark", options: ["Atlantis", "Cosmic Ark", "Space Attack"], correctAnswer: "Cosmic Ark" },
+            { content: "https://atariage.com/2600/screenshots/s_Crackpots_1.png", descriptionForAlt: "Screenshot of Crackpots", options: ["Kaboom!", "Crackpots", "Eggomania"], correctAnswer: "Crackpots" },
+            { content: "https://atariage.com/2600/screenshots/s_Crossbow_1.png", descriptionForAlt: "Screenshot of Crossbow", options: ["Robin Hood", "Crossbow", "Sentinel"], correctAnswer: "Crossbow" },
+            { content: "https://atariage.com/2600/screenshots/s_CrystalCastles_1.png", descriptionForAlt: "Screenshot of Crystal Castles", options: ["Q*bert", "Crystal Castles", "Marble Madness"], correctAnswer: "Crystal Castles" },
+            { content: "https://atariage.com/2600/screenshots/s_Decathlon_1.png", descriptionForAlt: "Screenshot of Decathlon", options: ["Summer Games", "Track & Field", "Decathlon"], correctAnswer: "Decathlon" },
+            { content: "https://atariage.com/2600/screenshots/s_Defender_1.png", descriptionForAlt: "Screenshot of Defender", options: ["Stargate", "Defender", "Chopper Command"], correctAnswer: "Defender" },
+            { content: "https://atariage.com/2600/screenshots/s_DemonAttack_1.png", descriptionForAlt: "Screenshot of Demon Attack", options: ["Phoenix", "Demon Attack", "Megamania"], correctAnswer: "Demon Attack" },
+            { content: "https://atariage.com/2600/screenshots/s_DemonsToDiamonds_1.png", descriptionForAlt: "Screenshot of Demons to Diamonds", options: ["Warlords", "Demons to Diamonds", "Circus Atari"], correctAnswer: "Demons to Diamonds" },
+            { content: "https://atariage.com/2600/screenshots/s_DesertFalcon_1.png", descriptionForAlt: "Screenshot of Desert Falcon", options: ["Joust", "Desert Falcon", "Tutankham"], correctAnswer: "Desert Falcon" },
+            { content: "https://atariage.com/2600/screenshots/s_DigDug_1.png", descriptionForAlt: "Screenshot of Dig Dug", options: ["Mr. Do!", "Dig Dug", "Boulder Dash"], correctAnswer: "Dig Dug" },
+            { content: "https://atariage.com/2600/screenshots/s_DodgeEm_1.png", descriptionForAlt: "Screenshot of Dodge 'Em", options: ["Pac-Man", "Head On", "Dodge 'Em"], correctAnswer: "Dodge 'Em" },
+            { content: "https://atariage.com/2600/screenshots/s_DonkeyKong_1.png", descriptionForAlt: "Screenshot of Donkey Kong", options: ["Popeye", "Donkey Kong", "Kangaroo"], correctAnswer: "Donkey Kong" },
+            { content: "https://atariage.com/2600/screenshots/s_DonkeyKongJunior_1.png", descriptionForAlt: "Screenshot of Donkey Kong Junior", options: ["Donkey Kong", "Donkey Kong Junior", "Pitfall II"], correctAnswer: "Donkey Kong Junior" },
+            { content: "https://atariage.com/2600/screenshots/s_DoubleDunk_1.png", descriptionForAlt: "Screenshot of Double Dunk", options: ["Basketball", "Double Dunk", "RealSports Basketball"], correctAnswer: "Double Dunk" },
+            { content: "https://atariage.com/2600/screenshots/s_Dragonfire_1.png", descriptionForAlt: "Screenshot of Dragonfire", options: ["Adventure", "Dragonfire", "Thunderground"], correctAnswer: "Dragonfire" },
+            { content: "https://atariage.com/2600/screenshots/s_Dragster_1.png", descriptionForAlt: "Screenshot of Dragster", options: ["Pole Position", "Dragster", "Enduro"], correctAnswer: "Dragster" },
+            { content: "https://atariage.com/2600/screenshots/s_EarthDiesScreaming_1.png", descriptionForAlt: "Screenshot of Earth Dies Screaming", options: ["Phaser Patrol", "Earth Dies Screaming", "Space Attack"], correctAnswer: "Earth Dies Screaming" },
+            { content: "https://atariage.com/2600/screenshots/s_Eggomania_1.png", descriptionForAlt: "Screenshot of Eggomania", options: ["Crackpots", "Eggomania", "Turmoil"], correctAnswer: "Eggomania" },
+            { content: "https://atariage.com/2600/screenshots/s_Enduro_1.png", descriptionForAlt: "Screenshot of Enduro", options: ["Grand Prix", "Pole Position", "Enduro"], correctAnswer: "Enduro" },
+            { content: "https://atariage.com/2600/screenshots/s_Entombed_1.png", descriptionForAlt: "Screenshot of Entombed", options: ["Venture", "Entombed", "Maze Craze"], correctAnswer: "Entombed" },
+            { content: "https://atariage.com/2600/screenshots/s_FantasticVoyage_1.png", descriptionForAlt: "Screenshot of Fantastic Voyage", options: ["Journey Escape", "Fantastic Voyage", "Micro Surgeon"], correctAnswer: "Fantastic Voyage" },
+            { content: "https://atariage.com/2600/screenshots/s_FastEddie_1.png", descriptionForAlt: "Screenshot of Fast Eddie", options: ["Keystone Kapers", "Fast Eddie", "Turmoil"], correctAnswer: "Fast Eddie" },
+            { content: "https://atariage.com/2600/screenshots/s_FastFood_1.png", descriptionForAlt: "Screenshot of Fast Food", options: ["Pressure Cooker", "BurgerTime", "Fast Food"], correctAnswer: "Fast Food" },
+            { content: "https://atariage.com/2600/screenshots/s_FatalRun_1.png", descriptionForAlt: "Screenshot of Fatal Run", options: ["Spy Hunter", "Fatal Run", "Road Runner"], correctAnswer: "Fatal Run" },
+            { content: "https://atariage.com/2600/screenshots/s_FinalApproach_1.png", descriptionForAlt: "Screenshot of Final Approach", options: ["Sky Diver", "Barnstorming", "Final Approach"], correctAnswer: "Final Approach" },
+            { content: "https://atariage.com/2600/screenshots/s_FishingDerby_1.png", descriptionForAlt: "Screenshot of Fishing Derby", options: ["Seaquest", "Fishing Derby", "Frogger"], correctAnswer: "Fishing Derby" },
+            { content: "https://atariage.com/2600/screenshots/s_FlagCapture_1.png", descriptionForAlt: "Screenshot of Flag Capture", options: ["Combat", "Flag Capture", "Capture"], correctAnswer: "Flag Capture" },
+            { content: "https://atariage.com/2600/screenshots/s_Football_1.png", descriptionForAlt: "Screenshot of Football", options: ["RealSports Football", "Football", "Super Football"], correctAnswer: "Football" },
+            { content: "https://atariage.com/2600/screenshots/s_Freeway_1.png", descriptionForAlt: "Screenshot of Freeway", options: ["Frogger", "Freeway", "Frogs and Flies"], correctAnswer: "Freeway" },
+            { content: "https://atariage.com/2600/screenshots/s_Frogger_1.png", descriptionForAlt: "Screenshot of Frogger", options: ["Frogs and Flies", "Frogger", "Freeway"], correctAnswer: "Frogger" },
+            { content: "https://atariage.com/2600/screenshots/s_FroggerIIThreedeep_1.png", descriptionForAlt: "Screenshot of Frogger II: Threedeep!", options: ["Frogger", "Frogger II: Threedeep!", "Seaquest"], correctAnswer: "Frogger II: Threedeep!" },
+            { content: "https://atariage.com/2600/screenshots/s_FrogsAndFlies_1.png", descriptionForAlt: "Screenshot of Frogs and Flies", options: ["Frogger", "Frogs and Flies", "Video Olympics"], correctAnswer: "Frogs and Flies" },
+            { content: "https://atariage.com/2600/screenshots/s_FrontLine_1.png", descriptionForAlt: "Screenshot of Front Line", options: ["Commando", "Ikari Warriors", "Front Line"], correctAnswer: "Front Line" },
+            { content: "https://atariage.com/2600/screenshots/s_Frostbite_1.png", descriptionForAlt: "Screenshot of Frostbite", options: ["Q*bert", "Frostbite", "Frogger"], correctAnswer: "Frostbite" },
+            { content: "https://atariage.com/2600/screenshots/s_Galaxian_1.png", descriptionForAlt: "Screenshot of Galaxian", options: ["Space Invaders", "Galaxian", "Phoenix"], correctAnswer: "Galaxian" },
+            { content: "https://atariage.com/2600/screenshots/s_GasHog_1.png", descriptionForAlt: "Screenshot of Gas Hog", options: ["Beamrider", "Gas Hog", "Space Attack"], correctAnswer: "Gas Hog" },
+            { content: "https://atariage.com/2600/screenshots/s_Ghostbusters_1.png", descriptionForAlt: "Screenshot of Ghostbusters", options: ["Haunted House", "Ghostbusters", "Alien"], correctAnswer: "Ghostbusters" },
+            { content: "https://atariage.com/2600/screenshots/s_GIGolo_1.png", descriptionForAlt: "Screenshot of G.I. Golo", options: ["Commando", "Front Line", "G.I. Golo"], correctAnswer: "G.I. Golo" },
+            { content: "https://atariage.com/2600/screenshots/s_GlacierPatrol_1.png", descriptionForAlt: "Screenshot of Glacier Patrol", options: ["Ice Hockey", "Frostbite", "Glacier Patrol"], correctAnswer: "Glacier Patrol" },
+            { content: "https://atariage.com/2600/screenshots/s_Golf_1.png", descriptionForAlt: "Screenshot of Golf", options: ["RealSports Golf", "Miniature Golf", "Golf"], correctAnswer: "Golf" },
+            { content: "https://atariage.com/2600/screenshots/s_Gopher_1.png", descriptionForAlt: "Screenshot of Gopher", options: ["Worm War I", "Gopher", "Tunnel Runner"], correctAnswer: "Gopher" },
+            { content: "https://atariage.com/2600/screenshots/s_GrandPrix_1.png", descriptionForAlt: "Screenshot of Grand Prix", options: ["Pole Position", "Grand Prix", "Enduro"], correctAnswer: "Grand Prix" },
+            { content: "https://atariage.com/2600/screenshots/s_Gravitar_1.png", descriptionForAlt: "Screenshot of Gravitar", options: ["Asteroids", "Gravitar", "Lunar Lander"], correctAnswer: "Gravitar" },
+            { content: "https://atariage.com/2600/screenshots/s_Gyruss_1.png", descriptionForAlt: "Screenshot of Gyruss", options: ["Tempest", "Gyruss", "Galaxian"], correctAnswer: "Gyruss" },
+            { content: "https://atariage.com/2600/screenshots/s_HERO_1.png", descriptionForAlt: "Screenshot of H.E.R.O.", options: ["Pitfall!", "H.E.R.O.", "Montezuma's Revenge"], correctAnswer: "H.E.R.O." },
+            { content: "https://atariage.com/2600/screenshots/s_Hangman_1.png", descriptionForAlt: "Screenshot of Hangman", options: ["Codebreaker", "Hangman", "Video Chess"], correctAnswer: "Hangman" },
+            { content: "https://atariage.com/2600/screenshots/s_HauntedHouse_1.png", descriptionForAlt: "Screenshot of Haunted House", options: ["Adventure", "Haunted House", "Frankenstein's Monster"], correctAnswer: "Haunted House" },
+            { content: "https://atariage.com/2600/screenshots/s_HomeRun_1.png", descriptionForAlt: "Screenshot of Home Run", options: ["RealSports Baseball", "Home Run", "Super Baseball"], correctAnswer: "Home Run" },
+            { content: "https://atariage.com/2600/screenshots/s_HumanCannonball_1.png", descriptionForAlt: "Screenshot of Human Cannonball", options: ["Circus Atari", "Human Cannonball", "Sky Diver"], correctAnswer: "Human Cannonball" },
+            { content: "https://atariage.com/2600/screenshots/s_IceHockey_1.png", descriptionForAlt: "Screenshot of Ice Hockey", options: ["RealSports Hockey", "Ice Hockey", "Hockey"], correctAnswer: "Ice Hockey" },
+            { content: "https://atariage.com/2600/screenshots/s_IkariWarriors_1.png", descriptionForAlt: "Screenshot of Ikari Warriors", options: ["Commando", "Ikari Warriors", "Rambo"], correctAnswer: "Ikari Warriors" },
+            { content: "https://atariage.com/2600/screenshots/s_Indy500_1.png", descriptionForAlt: "Screenshot of Indy 500", options: ["Pole Position", "Indy 500", "Sprintmaster"], correctAnswer: "Indy 500" },
+            { content: "https://atariage.com/2600/screenshots/s_Infiltrate_1.png", descriptionForAlt: "Screenshot of Infiltrate", options: ["Keystone Kapers", "Infiltrate", "Bank Heist"], correctAnswer: "Infiltrate" },
+            { content: "https://atariage.com/2600/screenshots/s_InternationalSoccer_1.png", descriptionForAlt: "Screenshot of International Soccer", options: ["RealSports Soccer", "Pele's Soccer", "International Soccer"], correctAnswer: "International Soccer" },
+            { content: "https://atariage.com/2600/screenshots/s_JamesBond007_1.png", descriptionForAlt: "Screenshot of James Bond 007", options: ["Spy Hunter", "James Bond 007", "River Raid"], correctAnswer: "James Bond 007" },
+            { content: "https://atariage.com/2600/screenshots/s_Jawbreaker_1.png", descriptionForAlt: "Screenshot of Jawbreaker", options: ["Pac-Man", "Jawbreaker", "Mouse Trap"], correctAnswer: "Jawbreaker" },
+            { content: "https://atariage.com/2600/screenshots/s_JourneyEscape_1.png", descriptionForAlt: "Screenshot of Journey Escape", options: ["Video Jogger", "Journey Escape", "Fantastic Voyage"], correctAnswer: "Journey Escape" },
+            { content: "https://atariage.com/2600/screenshots/s_Joust_1.png", descriptionForAlt: "Screenshot of Joust", options: ["Balloon Fight", "Joust", "Phoenix"], correctAnswer: "Joust" },
+            { content: "https://atariage.com/2600/screenshots/s_JungleHunt_1.png", descriptionForAlt: "Screenshot of Jungle Hunt", options: ["Pitfall!", "Jungle Hunt", "Congo Bongo"], correctAnswer: "Jungle Hunt" },
+            { content: "https://atariage.com/2600/screenshots/s_Kaboom_1.png", descriptionForAlt: "Screenshot of Kaboom!", options: ["Avalanche", "Kaboom!", "Circus Atari"], correctAnswer: "Kaboom!" },
+            { content: "https://atariage.com/2600/screenshots/s_Kangaroo_1.png", descriptionForAlt: "Screenshot of Kangaroo", options: ["Donkey Kong", "Kangaroo", "Popeye"], correctAnswer: "Kangaroo" },
+            { content: "https://atariage.com/2600/screenshots/s_KeystoneKapers_1.png", descriptionForAlt: "Screenshot of Keystone Kapers", options: ["Bank Heist", "Keystone Kapers", "Fast Eddie"], correctAnswer: "Keystone Kapers" },
+            { content: "https://atariage.com/2600/screenshots/s_KingKong_1.png", descriptionForAlt: "Screenshot of King Kong", options: ["Donkey Kong", "King Kong", "Congo Bongo"], correctAnswer: "King Kong" },
+            { content: "https://atariage.com/2600/screenshots/s_KoolAidMan_1.png", descriptionForAlt: "Screenshot of Kool-Aid Man", options: ["Pepsi Invaders", "Kool-Aid Man", "Fast Food"], correctAnswer: "Kool-Aid Man" },
+            { content: "https://atariage.com/2600/screenshots/s_Krull_1.png", descriptionForAlt: "Screenshot of Krull", options: ["Raiders of the Lost Ark", "Krull", "Towering Inferno"], correctAnswer: "Krull" },
+            { content: "https://atariage.com/2600/screenshots/s_KungFuMaster_1.png", descriptionForAlt: "Screenshot of Kung-Fu Master", options: ["Karateka", "Kung-Fu Master", "Double Dragon"], correctAnswer: "Kung-Fu Master" },
+            { content: "https://atariage.com/2600/screenshots/s_LadyBug_1.png", descriptionForAlt: "Screenshot of Lady Bug", options: ["Pac-Man", "Lady Bug", "Mouse Trap"], correctAnswer: "Lady Bug" },
+            { content: "https://atariage.com/2600/screenshots/s_LaserBlast_1.png", descriptionForAlt: "Screenshot of Laser Blast", options: ["Space Invaders", "Laser Blast", "Astroblast"], correctAnswer: "Laser Blast" },
+            { content: "https://atariage.com/2600/screenshots/s_LockNChase_1.png", descriptionForAlt: "Screenshot of Lock 'N' Chase", options: ["Pac-Man", "Lock 'N' Chase", "Mouse Trap"], correctAnswer: "Lock 'N' Chase" },
+            { content: "https://atariage.com/2600/screenshots/s_LondonBlitz_1.png", descriptionForAlt: "Screenshot of London Blitz", options: ["Missile Command", "Atlantis", "London Blitz"], correctAnswer: "London Blitz" },
+            { content: "https://atariage.com/2600/screenshots/s_LostLuggage_1.png", descriptionForAlt: "Screenshot of Lost Luggage", options: ["Keystone Kapers", "Lost Luggage", "Turmoil"], correctAnswer: "Lost Luggage" },
+            { content: "https://atariage.com/2600/screenshots/s_LunarLander_1.png", descriptionForAlt: "Screenshot of Lunar Lander", options: ["Gravitar", "Lunar Lander", "Asteroids"], correctAnswer: "Lunar Lander" },
+            { content: "https://atariage.com/2600/screenshots/s_Marauder_1.png", descriptionForAlt: "Screenshot of Marauder", options: ["Berzerk", "Marauder", "Robot Tank"], correctAnswer: "Marauder" },
+            { content: "https://atariage.com/2600/screenshots/s_MarineWars_1.png", descriptionForAlt: "Screenshot of Marine Wars", options: ["Seaquest", "Marine Wars", "Chopper Command"], correctAnswer: "Marine Wars" },
+            { content: "https://atariage.com/2600/screenshots/s_MarioBros_1.png", descriptionForAlt: "Screenshot of Mario Bros.", options: ["Donkey Kong", "Mario Bros.", "Popeye"], correctAnswer: "Mario Bros." },
+            { content: "https://atariage.com/2600/screenshots/s_MASH_1.png", descriptionForAlt: "Screenshot of M*A*S*H", options: ["Combat", "M*A*S*H", "Chopper Command"], correctAnswer: "M*A*S*H" },
+            { content: "https://atariage.com/2600/screenshots/s_MasterBuilder_1.png", descriptionForAlt: "Screenshot of Master Builder", options: ["Blue Print", "Master Builder", "Fix-It Felix Jr."], correctAnswer: "Master Builder" },
+            { content: "https://atariage.com/2600/screenshots/s_MazeCraze_1.png", descriptionForAlt: "Screenshot of Maze Craze", options: ["Pac-Man", "Maze Craze", "Gotcha"], correctAnswer: "Maze Craze" },
+            { content: "https://atariage.com/2600/screenshots/s_MegaForce_1.png", descriptionForAlt: "Screenshot of Mega Force", options: ["River Raid", "Mega Force", "Chopper Command"], correctAnswer: "Mega Force" },
+            { content: "https://atariage.com/2600/screenshots/s_Megamania_1.png", descriptionForAlt: "Screenshot of Megamania", options: ["Space Invaders", "Megamania", "Astroblast"], correctAnswer: "Megamania" },
+            { content: "https://atariage.com/2600/screenshots/s_MidnightMagic_1.png", descriptionForAlt: "Screenshot of Midnight Magic", options: ["Video Pinball", "Midnight Magic", "Breakout"], correctAnswer: "Midnight Magic" },
+            { content: "https://atariage.com/2600/screenshots/s_Millipede_1.png", descriptionForAlt: "Screenshot of Millipede", options: ["Centipede", "Millipede", "Galaga"], correctAnswer: "Millipede" },
+            { content: "https://atariage.com/2600/screenshots/s_Miner2049er_1.png", descriptionForAlt: "Screenshot of Miner 2049er", options: ["Donkey Kong", "Miner 2049er", "Manic Miner"], correctAnswer: "Miner 2049er" },
+            { content: "https://atariage.com/2600/screenshots/s_MiniatureGolf_1.png", descriptionForAlt: "Screenshot of Miniature Golf", options: ["Golf", "Miniature Golf", "RealSports Golf"], correctAnswer: "Miniature Golf" },
+            { content: "https://atariage.com/2600/screenshots/s_MissileCommand_1.png", descriptionForAlt: "Screenshot of Missile Command", options: ["Atlantis", "Missile Command", "Space Invaders"], correctAnswer: "Missile Command" },
+            { content: "https://atariage.com/2600/screenshots/s_MontezumasRevenge_1.png", descriptionForAlt: "Screenshot of Montezuma's Revenge", options: ["Pitfall!", "Montezuma's Revenge", "H.E.R.O."], correctAnswer: "Montezuma's Revenge" },
+            { content: "https://atariage.com/2600/screenshots/s_Moonsweeper_1.png", descriptionForAlt: "Screenshot of Moonsweeper", options: ["Defender", "Moonsweeper", "Stargate"], correctAnswer: "Moonsweeper" },
+            { content: "https://atariage.com/2600/screenshots/s_Motorodeo_1.png", descriptionForAlt: "Screenshot of Motocross Racer", options: ["Enduro", "Motocross Racer", "Excitebike"], correctAnswer: "Motocross Racer" }, // Note: Game is often listed as Motocross Racer or Motorodeo
+            { content: "https://atariage.com/2600/screenshots/s_MountainKing_1.png", descriptionForAlt: "Screenshot of Mountain King", options: ["Pitfall!", "Mountain King", "Montezuma's Revenge"], correctAnswer: "Mountain King" },
+            { content: "https://atariage.com/2600/screenshots/s_MouseTrap_1.png", descriptionForAlt: "Screenshot of Mouse Trap", options: ["Pac-Man", "Mouse Trap", "Lady Bug"], correctAnswer: "Mouse Trap" },
+            { content: "https://atariage.com/2600/screenshots/s_MrDo_1.png", descriptionForAlt: "Screenshot of Mr. Do!", options: ["Dig Dug", "Mr. Do!", "Boulder Dash"], correctAnswer: "Mr. Do!" },
+            { content: "https://atariage.com/2600/screenshots/s_MsPacMan_1.png", descriptionForAlt: "Screenshot of Ms. Pac-Man", options: ["Pac-Man", "Ms. Pac-Man", "Jawbreaker"], correctAnswer: "Ms. Pac-Man" },
+            { content: "https://atariage.com/2600/screenshots/s_NightDriver_1.png", descriptionForAlt: "Screenshot of Night Driver", options: ["Pole Position", "Night Driver", "Enduro"], correctAnswer: "Night Driver" },
+            { content: "https://atariage.com/2600/screenshots/s_Obelix_1.png", descriptionForAlt: "Screenshot of Obelix", options: ["Asterix", "Obelix", "Popeye"], correctAnswer: "Obelix" },
+            { content: "https://atariage.com/2600/screenshots/s_OffTheWall_1.png", descriptionForAlt: "Screenshot of Off The Wall", options: ["Breakout", "Off The Wall", "Arkanoid"], correctAnswer: "Off The Wall" },
+            { content: "https://atariage.com/2600/screenshots/s_Oink_1.png", descriptionForAlt: "Screenshot of Oink!", options: ["Pooyan", "Oink!", "Pigs in Space"], correctAnswer: "Oink!" },
+            { content: "https://atariage.com/2600/screenshots/s_OmegaRace_1.png", descriptionForAlt: "Screenshot of Omega Race", options: ["Asteroids", "Omega Race", "Space War"], correctAnswer: "Omega Race" },
+            { content: "https://atariage.com/2600/screenshots/s_Othello_1.png", descriptionForAlt: "Screenshot of Othello", options: ["Video Checkers", "Othello", "Reversi"], correctAnswer: "Othello" },
+            { content: "https://atariage.com/2600/screenshots/s_Outlaw_1.png", descriptionForAlt: "Screenshot of Outlaw", options: ["Gun Fight", "Outlaw", "Stampede"], correctAnswer: "Outlaw" },
+            { content: "https://atariage.com/2600/screenshots/s_PacMan_1.png", descriptionForAlt: "Screenshot of Pac-Man", options: ["Ms. Pac-Man", "Pac-Man", "Jawbreaker"], correctAnswer: "Pac-Man" },
+            { content: "https://atariage.com/2600/screenshots/s_PelesSoccer_1.png", descriptionForAlt: "Screenshot of Pele's Soccer", options: ["RealSports Soccer", "Pele's Soccer", "Championship Soccer"], correctAnswer: "Pele's Soccer" },
+            { content: "https://atariage.com/2600/screenshots/s_PenguinVenture_1.png", descriptionForAlt: "Screenshot of Pengo", options: ["Q*bert", "Pengo", "Frostbite"], correctAnswer: "Pengo" }, // Assuming it's Pengo
+            { content: "https://atariage.com/2600/screenshots/s_PepsiInvaders_1.png", descriptionForAlt: "Screenshot of Pepsi Invaders", options: ["Space Invaders", "Pepsi Invaders", "Kool-Aid Man"], correctAnswer: "Pepsi Invaders" },
+            { content: "https://atariage.com/2600/screenshots/s_PeteRosesBaseball_1.png", descriptionForAlt: "Screenshot of Pete Rose Baseball", options: ["RealSports Baseball", "Pete Rose Baseball", "Home Run"], correctAnswer: "Pete Rose Baseball" },
+            { content: "https://atariage.com/2600/screenshots/s_PhaserPatrol_1.png", descriptionForAlt: "Screenshot of Phaser Patrol", options: ["Star Raiders", "Phaser Patrol", "Starmaster"], correctAnswer: "Phaser Patrol" },
+            { content: "https://atariage.com/2600/screenshots/s_Phoenix_1.png", descriptionForAlt: "Screenshot of Phoenix", options: ["Galaxian", "Phoenix", "Demon Attack"], correctAnswer: "Phoenix" },
+            { content: "https://atariage.com/2600/screenshots/s_Picnic_1.png", descriptionForAlt: "Screenshot of Picnic", options: ["Frogs and Flies", "Picnic", "Worm War I"], correctAnswer: "Picnic" },
+            { content: "https://atariage.com/2600/screenshots/s_PieceOCake_1.png", descriptionForAlt: "Screenshot of Piece O' Cake", options: ["Fast Food", "Piece O' Cake", "Pressure Cooker"], correctAnswer: "Piece O' Cake" },
+            { content: "https://atariage.com/2600/screenshots/s_PigsInSpace_1.png", descriptionForAlt: "Screenshot of Pigs In Space", options: ["Muppets", "Pigs In Space", "Space Attack"], correctAnswer: "Pigs In Space" },
+            { content: "https://atariage.com/2600/screenshots/s_Pitfall_1.png", descriptionForAlt: "Screenshot of Pitfall!", options: ["Jungle Hunt", "Pitfall!", "Montezuma's Revenge"], correctAnswer: "Pitfall!" },
+            { content: "https://atariage.com/2600/screenshots/s_PitfallIITheLostCaverns_1.png", descriptionForAlt: "Screenshot of Pitfall II: Lost Caverns", options: ["Pitfall!", "Pitfall II: Lost Caverns", "H.E.R.O."], correctAnswer: "Pitfall II: Lost Caverns" },
+            { content: "https://atariage.com/2600/screenshots/s_PlanetPatrol_1.png", descriptionForAlt: "Screenshot of Planet Patrol", options: ["Moon Patrol", "Planet Patrol", "Defender"], correctAnswer: "Planet Patrol" },
+            { content: "https://atariage.com/2600/screenshots/s_PlaqueAttack_1.png", descriptionForAlt: "Screenshot of Plaque Attack", options: ["Fantastic Voyage", "Plaque Attack", "Micro Surgeon"], correctAnswer: "Plaque Attack" },
+            { content: "https://atariage.com/2600/screenshots/s_PolePosition_1.png", descriptionForAlt: "Screenshot of Pole Position", options: ["Grand Prix", "Pole Position", "Enduro"], correctAnswer: "Pole Position" },
+            { content: "https://atariage.com/2600/screenshots/s_PongSports_1.png", descriptionForAlt: "Screenshot of Pong Sports", options: ["Video Olympics", "Pong Sports", "Super Pong"], correctAnswer: "Pong Sports" },
+            { content: "https://atariage.com/2600/screenshots/s_Pooyan_1.png", descriptionForAlt: "Screenshot of Pooyan", options: ["Oink!", "Pooyan", "Carnival"], correctAnswer: "Pooyan" },
+            { content: "https://atariage.com/2600/screenshots/s_Popeye_1.png", descriptionForAlt: "Screenshot of Popeye", options: ["Donkey Kong", "Popeye", "Kangaroo"], correctAnswer: "Popeye" },
+            { content: "https://atariage.com/2600/screenshots/s_PorkyPig_1.png", descriptionForAlt: "Screenshot of Porky's", options: ["Fast Eddie", "Porky's", "Keystone Kapers"], correctAnswer: "Porky's" }, // Game name often Porky's
+            { content: "https://atariage.com/2600/screenshots/s_PressureCooker_1.png", descriptionForAlt: "Screenshot of Pressure Cooker", options: ["BurgerTime", "Pressure Cooker", "Fast Food"], correctAnswer: "Pressure Cooker" },
+            { content: "https://atariage.com/2600/screenshots/s_PrivateEye_1.png", descriptionForAlt: "Screenshot of Private Eye", options: ["Keystone Kapers", "Private Eye", "Bank Heist"], correctAnswer: "Private Eye" },
+            { content: "https://atariage.com/2600/screenshots/s_Qbert_1.png", descriptionForAlt: "Screenshot of Q*bert", options: ["Frogger", "Q*bert", "Crystal Castles"], correctAnswer: "Q*bert" },
+            { content: "https://atariage.com/2600/screenshots/s_QbertsQubes_1.png", descriptionForAlt: "Screenshot of Q*bert's Qubes", options: ["Q*bert", "Q*bert's Qubes", "Crystal Castles"], correctAnswer: "Q*bert's Qubes" },
+            { content: "https://atariage.com/2600/screenshots/s_Quadrun_1.png", descriptionForAlt: "Screenshot of Quadrun", options: ["Tempest", "Quadrun", "Gyruss"], correctAnswer: "Quadrun" },
+            { content: "https://atariage.com/2600/screenshots/s_RabbitTransit_1.png", descriptionForAlt: "Screenshot of Rabbit Transit", options: ["Frogger", "Rabbit Transit", "Freeway"], correctAnswer: "Rabbit Transit" },
+            { content: "https://atariage.com/2600/screenshots/s_RadarLock_1.png", descriptionForAlt: "Screenshot of Radar Lock", options: ["Top Gun", "Radar Lock", "After Burner"], correctAnswer: "Radar Lock" },
+            { content: "https://atariage.com/2600/screenshots/s_RaidersOfTheLostArk_1.png", descriptionForAlt: "Screenshot of Raiders of the Lost Ark", options: ["Adventure", "Raiders of the Lost Ark", "Pitfall!"], correctAnswer: "Raiders of the Lost Ark" },
+            { content: "https://atariage.com/2600/screenshots/s_Rampage_1.png", descriptionForAlt: "Screenshot of Rampage", options: ["King Kong", "Rampage", "Godzilla"], correctAnswer: "Rampage" },
+            { content: "https://atariage.com/2600/screenshots/s_Reactor_1.png", descriptionForAlt: "Screenshot of Reactor", options: ["Tempest", "Reactor", "Gravitar"], correctAnswer: "Reactor" },
+            { content: "https://atariage.com/2600/screenshots/s_RealSportsBaseball_1.png", descriptionForAlt: "Screenshot of RealSports Baseball", options: ["Home Run", "RealSports Baseball", "Super Baseball"], correctAnswer: "RealSports Baseball" },
+            { content: "https://atariage.com/2600/screenshots/s_RealSportsBoxing_1.png", descriptionForAlt: "Screenshot of RealSports Boxing", options: ["Boxing", "RealSports Boxing", "Title Match Pro Boxing"], correctAnswer: "RealSports Boxing" },
+            { content: "https://atariage.com/2600/screenshots/s_RealSportsFootball_1.png", descriptionForAlt: "Screenshot of RealSports Football", options: ["Football", "RealSports Football", "Super Football"], correctAnswer: "RealSports Football" },
+            { content: "https://atariage.com/2600/screenshots/s_RealSportsSoccer_1.png", descriptionForAlt: "Screenshot of RealSports Soccer", options: ["Pele's Soccer", "RealSports Soccer", "Championship Soccer"], correctAnswer: "RealSports Soccer" },
+            { content: "https://atariage.com/2600/screenshots/s_RealSportsTennis_1.png", descriptionForAlt: "Screenshot of RealSports Tennis", options: ["Tennis", "RealSports Tennis", "Activision Tennis"], correctAnswer: "RealSports Tennis" },
+            { content: "https://atariage.com/2600/screenshots/s_RealSportsVolleyball_1.png", descriptionForAlt: "Screenshot of RealSports Volleyball", options: ["Volleyball", "RealSports Volleyball", "Super Volleyball"], correctAnswer: "RealSports Volleyball" },
+            { content: "https://atariage.com/2600/screenshots/s_ReturnOfTheJediDeathStarBattle_1.png", descriptionForAlt: "Screenshot of Return of the Jedi: Death Star Battle", options: ["Star Wars: The Arcade Game", "Return of the Jedi: Death Star Battle", "Empire Strikes Back"], correctAnswer: "Return of the Jedi: Death Star Battle" },
+            { content: "https://atariage.com/2600/screenshots/s_RiverRaid_1.png", descriptionForAlt: "Screenshot of River Raid", options: ["Chopper Command", "River Raid", "Zaxxon"], correctAnswer: "River Raid" },
+            { content: "https://atariage.com/2600/screenshots/s_RiverRaidII_1.png", descriptionForAlt: "Screenshot of River Raid II", options: ["River Raid", "River Raid II", "Air Raiders"], correctAnswer: "River Raid II" },
+            { content: "https://atariage.com/2600/screenshots/s_RoadRunner_1.png", descriptionForAlt: "Screenshot of Road Runner", options: ["Frogger", "Road Runner", "Bump 'N' Jump"], correctAnswer: "Road Runner" },
+            { content: "https://atariage.com/2600/screenshots/s_RobinHood_1.png", descriptionForAlt: "Screenshot of Robin Hood", options: ["Crossbow", "Robin Hood", "Adventure"], correctAnswer: "Robin Hood" },
+            { content: "https://atariage.com/2600/screenshots/s_RobotTank_1.png", descriptionForAlt: "Screenshot of Robot Tank", options: ["Battlezone", "Robot Tank", "Stellar Track"], correctAnswer: "Robot Tank" },
+            { content: "https://atariage.com/2600/screenshots/s_RocNRope_1.png", descriptionForAlt: "Screenshot of Roc 'N Rope", options: ["Pitfall!", "Roc 'N Rope", "Jungle Hunt"], correctAnswer: "Roc 'N Rope" },
+            { content: "https://atariage.com/2600/screenshots/s_RubiksCube_1.png", descriptionForAlt: "Screenshot of Rubik's Cube", options: ["Atari Video Cube", "Rubik's Cube", "3-D Tic-Tac-Toe"], correctAnswer: "Rubik's Cube" }, // Often called Atari Video Cube
+            { content: "https://atariage.com/2600/screenshots/s_SeaQuest_1.png", descriptionForAlt: "Screenshot of Seaquest", options: ["Atlantis", "Seaquest", "Dolphin"], correctAnswer: "Seaquest" },
+            { content: "https://atariage.com/2600/screenshots/s_SecretQuest_1.png", descriptionForAlt: "Screenshot of Secret Quest", options: ["Adventure", "Secret Quest", "SwordQuest Earthworld"], correctAnswer: "Secret Quest" },
+            { content: "https://atariage.com/2600/screenshots/s_Sentinel_1.png", descriptionForAlt: "Screenshot of Sentinel", options: ["Crossbow", "Sentinel", "Robot Tank"], correctAnswer: "Sentinel" },
+            { content: "https://atariage.com/2600/screenshots/s_SirLancelot_1.png", descriptionForAlt: "Screenshot of Sir Lancelot", options: ["Dragonfire", "Sir Lancelot", "Joust"], correctAnswer: "Sir Lancelot" },
+            { content: "https://atariage.com/2600/screenshots/s_Skateboardin_1.png", descriptionForAlt: "Screenshot of Skateboardin'", options: ["California Games", "Skateboardin'", "720 Degrees"], correctAnswer: "Skateboardin'" },
+            { content: "https://atariage.com/2600/screenshots/s_SkeetShoot_1.png", descriptionForAlt: "Screenshot of Skeet Shoot", options: ["Air-Sea Battle", "Skeet Shoot", "Duck Hunt"], correctAnswer: "Skeet Shoot" },
+            { content: "https://atariage.com/2600/screenshots/s_Skiing_1.png", descriptionForAlt: "Screenshot of Skiing", options: ["Slalom", "Skiing", "Winter Games"], correctAnswer: "Skiing" },
+            { content: "https://atariage.com/2600/screenshots/s_SkyDiver_1.png", descriptionForAlt: "Screenshot of Sky Diver", options: ["Human Cannonball", "Sky Diver", "Barnstorming"], correctAnswer: "Sky Diver" },
+            { content: "https://atariage.com/2600/screenshots/s_SkyJinks_1.png", descriptionForAlt: "Screenshot of Sky Jinks", options: ["Barnstorming", "Sky Jinks", "Grand Prix"], correctAnswer: "Sky Jinks" },
+            { content: "https://atariage.com/2600/screenshots/s_SkySkipper_1.png", descriptionForAlt: "Screenshot of Sky Skipper", options: ["Popeye", "Sky Skipper", "Donkey Kong Junior"], correctAnswer: "Sky Skipper" },
+            { content: "https://atariage.com/2600/screenshots/s_SlotMachine_1.png", descriptionForAlt: "Screenshot of Slot Machine", options: ["Casino", "Slot Machine", "Blackjack"], correctAnswer: "Slot Machine" },
+            { content: "https://atariage.com/2600/screenshots/s_SlotRacers_1.png", descriptionForAlt: "Screenshot of Slot Racers", options: ["Indy 500", "Slot Racers", "Sprintmaster"], correctAnswer: "Slot Racers" },
+            { content: "https://atariage.com/2600/screenshots/s_SmurfsRescueInGargamelsCastle_1.png", descriptionForAlt: "Screenshot of Smurfs: Rescue in Gargamel's Castle", options: ["Pitfall!", "Smurfs: Rescue in Gargamel's Castle", "Montezuma's Revenge"], correctAnswer: "Smurfs: Rescue in Gargamel's Castle" },
+            { content: "https://atariage.com/2600/screenshots/s_SnoopyAndTheRedBaron_1.png", descriptionForAlt: "Screenshot of Snoopy and the Red Baron", options: ["Combat", "Snoopy and the Red Baron", "Chopper Command"], correctAnswer: "Snoopy and the Red Baron" },
+            { content: "https://atariage.com/2600/screenshots/s_SolarFox_1.png", descriptionForAlt: "Screenshot of Solar Fox", options: ["Pac-Man", "Solar Fox", "Amidar"], correctAnswer: "Solar Fox" },
+            { content: "https://atariage.com/2600/screenshots/s_Solaris_1.png", descriptionForAlt: "Screenshot of Solaris", options: ["Star Raiders", "Solaris", "Starmaster"], correctAnswer: "Solaris" },
+            { content: "https://atariage.com/2600/screenshots/s_Sorcerer_1.png", descriptionForAlt: "Screenshot of Sorcerer", options: ["Adventure", "Sorcerer", "Haunted House"], correctAnswer: "Sorcerer" },
+            { content: "https://atariage.com/2600/screenshots/s_SorcerersApprentice_1.png", descriptionForAlt: "Screenshot of Sorcerer's Apprentice", options: ["Fantasia", "Sorcerer's Apprentice", "Warlords"], correctAnswer: "Sorcerer's Apprentice" },
+            { content: "https://atariage.com/2600/screenshots/s_SpaceAttack_1.png", descriptionForAlt: "Screenshot of Space Attack", options: ["Space Invaders", "Space Attack", "Megamania"], correctAnswer: "Space Attack" },
+            { content: "https://atariage.com/2600/screenshots/s_SpaceCavern_1.png", descriptionForAlt: "Screenshot of Space Cavern", options: ["Demon Attack", "Space Cavern", "Phoenix"], correctAnswer: "Space Cavern" },
+            { content: "https://atariage.com/2600/screenshots/s_SpaceInvaders_1.png", descriptionForAlt: "Screenshot of Space Invaders", options: ["Galaxian", "Space Invaders", "Phoenix"], correctAnswer: "Space Invaders" },
+            { content: "https://atariage.com/2600/screenshots/s_SpaceJockey_1.png", descriptionForAlt: "Screenshot of Space Jockey", options: ["Asteroids", "Space Jockey", "Gravitar"], correctAnswer: "Space Jockey" },
+            { content: "https://atariage.com/2600/screenshots/s_SpaceMasterXO_1.png", descriptionForAlt: "Screenshot of SpaceMaster X-7", options: ["Beamrider", "SpaceMaster X-7", "Zaxxon"], correctAnswer: "SpaceMaster X-7" },
+            { content: "https://atariage.com/2600/screenshots/s_SpaceShuttleAJourneyIntoSpace_1.png", descriptionForAlt: "Screenshot of Space Shuttle", options: ["Lunar Lander", "Space Shuttle", "Apollo 13"], correctAnswer: "Space Shuttle" },
+            { content: "https://atariage.com/2600/screenshots/s_SpaceWar_1.png", descriptionForAlt: "Screenshot of Space War", options: ["Asteroids", "Space War", "Gravitar"], correctAnswer: "Space War" },
+            { content: "https://atariage.com/2600/screenshots/s_SpiderFighter_1.png", descriptionForAlt: "Screenshot of Spider Fighter", options: ["Centipede", "Spider Fighter", "Millipede"], correctAnswer: "Spider Fighter" },
+            { content: "https://atariage.com/2600/screenshots/s_SpiderMan_1.png", descriptionForAlt: "Screenshot of Spider-Man", options: ["Superman", "Spider-Man", "H.E.R.O."], correctAnswer: "Spider-Man" },
+            { content: "https://atariage.com/2600/screenshots/s_SpikePigskin6ManFootball_1.png", descriptionForAlt: "Screenshot of Spike's Peak / Pigskin 621 A.D.", options: ["RealSports Volleyball", "Spike's Peak", "Volleyball"], correctAnswer: "Spike's Peak" }, // Name varies
+            { content: "https://atariage.com/2600/screenshots/s_Springer_1.png", descriptionForAlt: "Screenshot of Springer", options: ["Frogger", "Springer", "Q*bert"], correctAnswer: "Springer" },
+            { content: "https://atariage.com/2600/screenshots/s_Sprintmaster_1.png", descriptionForAlt: "Screenshot of Sprintmaster", options: ["Indy 500", "Sprintmaster", "Slot Racers"], correctAnswer: "Sprintmaster" },
+            { content: "https://atariage.com/2600/screenshots/s_SpyHunter_1.png", descriptionForAlt: "Screenshot of Spy Hunter", options: ["River Raid", "Spy Hunter", "Bump 'N' Jump"], correctAnswer: "Spy Hunter" },
+            { content: "https://atariage.com/2600/screenshots/s_SqueezeBox_1.png", descriptionForAlt: "Screenshot of Squeeze Box", options: ["Amidar", "Squeeze Box", "Lock 'N' Chase"], correctAnswer: "Squeeze Box" },
+            { content: "https://atariage.com/2600/screenshots/s_SquishEmSam_1.png", descriptionForAlt: "Screenshot of Squish 'Em Sam", options: ["Miner 2049er", "Squish 'Em Sam", "Donkey Kong"], correctAnswer: "Squish 'Em Sam" },
+            { content: "https://atariage.com/2600/screenshots/s_Stampede_1.png", descriptionForAlt: "Screenshot of Stampede", options: ["Outlaw", "Stampede", "Rodeo"], correctAnswer: "Stampede" },
+            { content: "https://atariage.com/2600/screenshots/s_StarRaiders_1.png", descriptionForAlt: "Screenshot of Star Raiders", options: ["Starmaster", "Star Raiders", "Phaser Patrol"], correctAnswer: "Star Raiders" },
+            { content: "https://atariage.com/2600/screenshots/s_StarShip_1.png", descriptionForAlt: "Screenshot of Star Ship", options: ["Space War", "Star Ship", "Outer Space"], correctAnswer: "Star Ship" },
+            { content: "https://atariage.com/2600/screenshots/s_StarStrike_1.png", descriptionForAlt: "Screenshot of Star Strike", options: ["Star Wars: The Arcade Game", "Star Strike", "Buck Rogers"], correctAnswer: "Star Strike" },
+            { content: "https://atariage.com/2600/screenshots/s_StarVoyager_1.png", descriptionForAlt: "Screenshot of Star Voyager", options: ["Star Raiders", "Star Voyager", "Starmaster"], correctAnswer: "Star Voyager" },
+            { content: "https://atariage.com/2600/screenshots/s_StarWarsTheArcadeGame_1.png", descriptionForAlt: "Screenshot of Star Wars: The Arcade Game", options: ["Empire Strikes Back", "Star Wars: The Arcade Game", "Return of the Jedi"], correctAnswer: "Star Wars: The Arcade Game" },
+            { content: "https://atariage.com/2600/screenshots/s_StarWarsTheEmpireStrikesBack_1.png", descriptionForAlt: "Screenshot of Star Wars: The Empire Strikes Back", options: ["Star Wars: The Arcade Game", "Star Wars: The Empire Strikes Back", "Defender"], correctAnswer: "Star Wars: The Empire Strikes Back" },
+            { content: "https://atariage.com/2600/screenshots/s_Stargate_1.png", descriptionForAlt: "Screenshot of Stargate", options: ["Defender", "Stargate", "Chopper Command"], correctAnswer: "Stargate" },
+            { content: "https://atariage.com/2600/screenshots/s_Starmaster_1.png", descriptionForAlt: "Screenshot of Starmaster", options: ["Star Raiders", "Starmaster", "Phaser Patrol"], correctAnswer: "Starmaster" },
+            { content: "https://atariage.com/2600/screenshots/s_Steeplechase_1.png", descriptionForAlt: "Screenshot of Steeplechase", options: ["Stampede", "Steeplechase", "Decathlon"], correctAnswer: "Steeplechase" },
+            { content: "https://atariage.com/2600/screenshots/s_StellarTrack_1.png", descriptionForAlt: "Screenshot of Stellar Track", options: ["Star Ship", "Stellar Track", "Robot Tank"], correctAnswer: "Stellar Track" },
+            { content: "https://atariage.com/2600/screenshots/s_StreetRacer_1.png", descriptionForAlt: "Screenshot of Street Racer", options: ["Night Driver", "Street Racer", "Indy 500"], correctAnswer: "Street Racer" },
+            { content: "https://atariage.com/2600/screenshots/s_SubScan_1.png", descriptionForAlt: "Screenshot of Sub Scan", options: ["Seaquest", "Sub Scan", "Air-Sea Battle"], correctAnswer: "Sub Scan" },
+            { content: "https://atariage.com/2600/screenshots/s_Subterranea_1.png", descriptionForAlt: "Screenshot of Subterranea", options: ["Gravitar", "Subterranea", "Defender"], correctAnswer: "Subterranea" },
+            { content: "https://atariage.com/2600/screenshots/s_SummerGames_1.png", descriptionForAlt: "Screenshot of Summer Games", options: ["Decathlon", "Summer Games", "California Games"], correctAnswer: "Summer Games" },
+            { content: "https://atariage.com/2600/screenshots/s_SuperBaseball_1.png", descriptionForAlt: "Screenshot of Super Baseball", options: ["RealSports Baseball", "Super Baseball", "Home Run"], correctAnswer: "Super Baseball" },
+            { content: "https://atariage.com/2600/screenshots/s_SuperBreakout_1.png", descriptionForAlt: "Screenshot of Super Breakout", options: ["Breakout", "Super Breakout", "Warlords"], correctAnswer: "Super Breakout" },
+            { content: "https://atariage.com/2600/screenshots/s_SuperChallengeBaseball_1.png", descriptionForAlt: "Screenshot of Super Challenge Baseball", options: ["RealSports Baseball", "Super Challenge Baseball", "Pete Rose Baseball"], correctAnswer: "Super Challenge Baseball" },
+            { content: "https://atariage.com/2600/screenshots/s_SuperChallengeFootball_1.png", descriptionForAlt: "Screenshot of Super Challenge Football", options: ["RealSports Football", "Super Challenge Football", "Football"], correctAnswer: "Super Challenge Football" },
+            { content: "https://atariage.com/2600/screenshots/s_SuperCobra_1.png", descriptionForAlt: "Screenshot of Super Cobra", options: ["Chopper Command", "Super Cobra", "Defender"], correctAnswer: "Super Cobra" },
+            { content: "https://atariage.com/2600/screenshots/s_SuperFootball_1.png", descriptionForAlt: "Screenshot of Super Football", options: ["RealSports Football", "Super Football", "Football"], correctAnswer: "Super Football" },
+            { content: "https://atariage.com/2600/screenshots/s_Superman_1.png", descriptionForAlt: "Screenshot of Superman", options: ["Adventure", "Superman", "Spider-Man"], correctAnswer: "Superman" },
+            { content: "https://atariage.com/2600/screenshots/s_Surfing_1.png", descriptionForAlt: "Screenshot of Surf's Up", options: ["California Games", "Surf's Up", "Seaquest"], correctAnswer: "Surf's Up" }, // Often just called Surf's Up
+            { content: "https://atariage.com/2600/screenshots/s_Surround_1.png", descriptionForAlt: "Screenshot of Surround", options: ["Blockade", "Surround", "Maze Craze"], correctAnswer: "Surround" },
+            { content: "https://atariage.com/2600/screenshots/s_SwordQuestEarthworld_1.png", descriptionForAlt: "Screenshot of SwordQuest: Earthworld", options: ["Adventure", "SwordQuest: Earthworld", "Raiders of the Lost Ark"], correctAnswer: "SwordQuest: Earthworld" },
+            { content: "https://atariage.com/2600/screenshots/s_SwordQuestFireworld_1.png", descriptionForAlt: "Screenshot of SwordQuest: Fireworld", options: ["SwordQuest: Earthworld", "SwordQuest: Fireworld", "Haunted House"], correctAnswer: "SwordQuest: Fireworld" },
+            { content: "https://atariage.com/2600/screenshots/s_SwordQuestWaterworld_1.png", descriptionForAlt: "Screenshot of SwordQuest: Waterworld", options: ["SwordQuest: Fireworld", "SwordQuest: Waterworld", "Seaquest"], correctAnswer: "SwordQuest: Waterworld" },
+            { content: "https://atariage.com/2600/screenshots/s_Sync_1.png", descriptionForAlt: "Screenshot of Sync", options: ["Cosmic Ark", "Sync", "Atlantis"], correctAnswer: "Sync" },
+            { content: "https://atariage.com/2600/screenshots/s_TankPlus_1.png", descriptionForAlt: "Screenshot of Tank Plus", options: ["Combat", "Tank Plus", "Armor Ambush"], correctAnswer: "Tank Plus" },
+            { content: "https://atariage.com/2600/screenshots/s_Tapeworm_1.png", descriptionForAlt: "Screenshot of Tapeworm", options: ["Surround", "Tapeworm", "Centipede"], correctAnswer: "Tapeworm" },
+            { content: "https://atariage.com/2600/screenshots/s_Tapper_1.png", descriptionForAlt: "Screenshot of Tapper", options: ["Pressure Cooker", "Tapper", "Root Beer Tapper"], correctAnswer: "Tapper" }, // Often Root Beer Tapper
+            { content: "https://atariage.com/2600/screenshots/s_TaskForce_1.png", descriptionForAlt: "Screenshot of Task Force", options: ["Chopper Command", "Task Force", "River Raid"], correctAnswer: "Task Force" },
+            { content: "https://atariage.com/2600/screenshots/s_TaxAvoiders_1.png", descriptionForAlt: "Screenshot of Tax Avoiders", options: ["Keystone Kapers", "Tax Avoiders", "Maze Craze"], correctAnswer: "Tax Avoiders" },
+            { content: "https://atariage.com/2600/screenshots/s_Tempest_1.png", descriptionForAlt: "Screenshot of Tempest", options: ["Gyruss", "Tempest", "Quadrun"], correctAnswer: "Tempest" },
+            { content: "https://atariage.com/2600/screenshots/s_Tennis_1.png", descriptionForAlt: "Screenshot of Tennis", options: ["RealSports Tennis", "Tennis", "Activision Tennis"], correctAnswer: "Tennis" },
+            { content: "https://atariage.com/2600/screenshots/s_TexasChainsawMassacre_1.png", descriptionForAlt: "Screenshot of Texas Chainsaw Massacre", options: ["Halloween", "Texas Chainsaw Massacre", "Frankenstein's Monster"], correctAnswer: "Texas Chainsaw Massacre" },
+            { content: "https://atariage.com/2600/screenshots/s_Threshold_1.png", descriptionForAlt: "Screenshot of Threshold", options: ["Beamrider", "Threshold", "Space Attack"], correctAnswer: "Threshold" },
+            { content: "https://atariage.com/2600/screenshots/s_Thunderground_1.png", descriptionForAlt: "Screenshot of Thunderground", options: ["Surround", "Thunderground", "Tunnel Runner"], correctAnswer: "Thunderground" },
+            { content: "https://atariage.com/2600/screenshots/s_TitleMatchProBoxing_1.png", descriptionForAlt: "Screenshot of Title Match Pro Boxing", options: ["Boxing", "Title Match Pro Boxing", "RealSports Boxing"], correctAnswer: "Title Match Pro Boxing" },
+            { content: "https://atariage.com/2600/screenshots/s_TomarcTheBarbarian_1.png", descriptionForAlt: "Screenshot of Tomarc the Barbarian", options: ["Conan", "Tomarc the Barbarian", "Sorcerer"], correctAnswer: "Tomarc the Barbarian" },
+            { content: "https://atariage.com/2600/screenshots/s_ToweringInferno_1.png", descriptionForAlt: "Screenshot of Towering Inferno", options: ["Fire Fighter", "Towering Inferno", "Krull"], correctAnswer: "Towering Inferno" },
+            { content: "https://atariage.com/2600/screenshots/s_TrackField_1.png", descriptionForAlt: "Screenshot of Track & Field", options: ["Decathlon", "Track & Field", "Summer Games"], correctAnswer: "Track & Field" },
+            { content: "https://atariage.com/2600/screenshots/s_TrickShot_1.png", descriptionForAlt: "Screenshot of Trick Shot", options: ["Video Pool", "Trick Shot", "Billiards"], correctAnswer: "Trick Shot" },
+            { content: "https://atariage.com/2600/screenshots/s_TronDeadlyDiscs_1.png", descriptionForAlt: "Screenshot of Tron: Deadly Discs", options: ["Discs of Tron", "Tron: Deadly Discs", "Warlords"], correctAnswer: "Tron: Deadly Discs" },
+            { content: "https://atariage.com/2600/screenshots/s_TunnelRunner_1.png", descriptionForAlt: "Screenshot of Tunnel Runner", options: ["Maze Craze", "Tunnel Runner", "3D Maze"], correctAnswer: "Tunnel Runner" },
+            { content: "https://atariage.com/2600/screenshots/s_Turmoil_1.png", descriptionForAlt: "Screenshot of Turmoil", options: ["Space Attack", "Turmoil", "Demon Attack"], correctAnswer: "Turmoil" },
+            { content: "https://atariage.com/2600/screenshots/s_Tutankham_1.png", descriptionForAlt: "Screenshot of Tutankham", options: ["Pharaoh's Curse", "Tutankham", "Adventure"], correctAnswer: "Tutankham" },
+            { content: "https://atariage.com/2600/screenshots/s_UpNDown_1.png", descriptionForAlt: "Screenshot of Up'n Down", options: ["Q*bert", "Up'n Down", "Congo Bongo"], correctAnswer: "Up'n Down" },
+            { content: "https://atariage.com/2600/screenshots/s_Vanguard_1.png", descriptionForAlt: "Screenshot of Vanguard", options: ["Defender", "Vanguard", "Scramble"], correctAnswer: "Vanguard" },
+            { content: "https://atariage.com/2600/screenshots/s_Venture_1.png", descriptionForAlt: "Screenshot of Venture", options: ["Adventure", "Venture", "Dark Cavern"], correctAnswer: "Venture" },
+            { content: "https://atariage.com/2600/screenshots/s_VideoCheckers_1.png", descriptionForAlt: "Screenshot of Video Checkers", options: ["Othello", "Video Checkers", "Checkers"], correctAnswer: "Video Checkers" },
+            { content: "https://atariage.com/2600/screenshots/s_VideoChess_1.png", descriptionForAlt: "Screenshot of Video Chess", options: ["Checkers", "Video Chess", "Othello"], correctAnswer: "Video Chess" },
+            { content: "https://atariage.com/2600/screenshots/s_VideoCube_1.png", descriptionForAlt: "Screenshot of Video Cube", options: ["Rubik's Cube", "Video Cube", "3-D Tic-Tac-Toe"], correctAnswer: "Video Cube" }, // Same as Rubik's Cube
+            { content: "https://atariage.com/2600/screenshots/s_VideoLife_1.png", descriptionForAlt: "Screenshot of Video Life", options: ["Surround", "Video Life", "BASIC Programming"], correctAnswer: "Video Life" },
+            { content: "https://atariage.com/2600/screenshots/s_VideoOlympics_1.png", descriptionForAlt: "Screenshot of Video Olympics", options: ["Pong Sports", "Video Olympics", "Super Pong"], correctAnswer: "Video Olympics" },
+            { content: "https://atariage.com/2600/screenshots/s_VideoPinball_1.png", descriptionForAlt: "Screenshot of Video Pinball", options: ["Midnight Magic", "Video Pinball", "Breakout"], correctAnswer: "Video Pinball" },
+            { content: "https://atariage.com/2600/screenshots/s_Wabbit_1.png", descriptionForAlt: "Screenshot of Wabbit", options: ["Stampede", "Wabbit", "Freeway"], correctAnswer: "Wabbit" },
+            { content: "https://atariage.com/2600/screenshots/s_Warlords_1.png", descriptionForAlt: "Screenshot of Warlords", options: ["Breakout", "Warlords", "Demons to Diamonds"], correctAnswer: "Warlords" },
+            { content: "https://atariage.com/2600/screenshots/s_Warplock_1.png", descriptionForAlt: "Screenshot of Warplock", options: ["Warlords", "Warplock", "Breakout"], correctAnswer: "Warplock" },
+            { content: "https://atariage.com/2600/screenshots/s_WinterGames_1.png", descriptionForAlt: "Screenshot of Winter Games", options: ["Summer Games", "Winter Games", "California Games"], correctAnswer: "Winter Games" },
+            { content: "https://atariage.com/2600/screenshots/s_WizardOfWor_1.png", descriptionForAlt: "Screenshot of Wizard of Wor", options: ["Berzerk", "Wizard of Wor", "Venture"], correctAnswer: "Wizard of Wor" },
+            { content: "https://atariage.com/2600/screenshots/s_WordZapper_1.png", descriptionForAlt: "Screenshot of Word Zapper", options: ["Hangman", "Word Zapper", "Codebreaker"], correctAnswer: "Word Zapper" },
+            { content: "https://atariage.com/2600/screenshots/s_WormWarI_1.png", descriptionForAlt: "Screenshot of Worm War I", options: ["Centipede", "Worm War I", "Surround"], correctAnswer: "Worm War I" },
+            { content: "https://atariage.com/2600/screenshots/s_Xenophobe_1.png", descriptionForAlt: "Screenshot of Xenophobe", options: ["Alien", "Xenophobe", "Space Invaders"], correctAnswer: "Xenophobe" },
+            { content: "https://atariage.com/2600/screenshots/s_YarsRevenge_1.png", descriptionForAlt: "Screenshot of Yars' Revenge", options: ["Cosmic Ark", "Yars' Revenge", "Space War"], correctAnswer: "Yars' Revenge" },
+            { content: "https://atariage.com/2600/screenshots/s_Zaxxon_1.png", descriptionForAlt: "Screenshot of Zaxxon", options: ["Buck Rogers", "Zaxxon", "River Raid"], correctAnswer: "Zaxxon" }
+            // --- END OF MANUALLY VERIFY/CORRECT SECTION ---
+        ];
+
+
+        let currentQuestionIndex;
+        let score;
+        let shuffledQuestions;
+        const questionsPerRound = 10;
+
+        // --- Utility Functions ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // --- Game Logic Functions ---
+        function startGame() {
+            score = 0;
+            currentQuestionIndex = 0;
+             const availableQuestions = gameQuestions.length;
+             const numQuestionsThisRound = Math.min(questionsPerRound, availableQuestions);
+
+             if (availableQuestions === 0) {
+                 alert("Error: No questions defined in the gameQuestions array!");
+                 fallbackTextElement.textContent = "Error: No questions loaded. Please check the gameQuestions array in the source code.";
+                 fallbackTextElement.classList.remove('hidden');
+                 quizArea.classList.add('hidden'); // Hide main quiz area
+                 resultsArea.classList.add('hidden');
+                 return;
+             }
+             if (availableQuestions < questionsPerRound) {
+                 console.warn(`Warning: Only ${availableQuestions} questions available, less than the desired ${questionsPerRound}. Using ${availableQuestions} questions this round.`);
+             }
+
+             shuffledQuestions = [...gameQuestions];
+             shuffleArray(shuffledQuestions);
+             shuffledQuestions = shuffledQuestions.slice(0, numQuestionsThisRound);
+
+            resultsArea.classList.add('hidden');
+            quizArea.classList.remove('hidden');
+            resetButtonStates();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            resetButtonStates();
+            const totalQuestionsInRound = shuffledQuestions.length;
+            if (currentQuestionIndex >= totalQuestionsInRound) {
+                showResults(totalQuestionsInRound);
+                return;
+            }
+
+            questionCounterElement.textContent = `Question ${currentQuestionIndex + 1} of ${totalQuestionsInRound}`;
+            const currentQuestion = shuffledQuestions[currentQuestionIndex];
+
+            questionImage.classList.add('hidden');
+            fallbackTextElement.classList.add('hidden');
+            questionImage.src = "";
+            questionImage.alt = "";
+
+            if (currentQuestion.content) {
+                questionImage.onload = () => {
+                    questionImage.classList.remove('hidden');
+                    fallbackTextElement.classList.add('hidden');
+                };
+                questionImage.onerror = () => {
+                    console.error(`Failed to load image: ${currentQuestion.content}`);
+                    fallbackTextElement.textContent = `[Image for ${currentQuestion.correctAnswer} could not be loaded - Check URL in source]`;
+                    fallbackTextElement.classList.remove('hidden');
+                    questionImage.classList.add('hidden');
+                };
+
+                questionImage.src = currentQuestion.content;
+                questionImage.alt = currentQuestion.descriptionForAlt || "Atari Game Screenshot";
+
+            } else {
+                 fallbackTextElement.textContent = "[Error: Question data is missing image URL]";
+                 fallbackTextElement.classList.remove('hidden');
+                 questionImage.classList.add('hidden');
+            }
+
+             // Shuffle options before display
+            let displayOptions = [...currentQuestion.options];
+            shuffleArray(displayOptions); // Shuffle the options for random button order
+
+            answerButtons.forEach((button, index) => {
+                if (index < displayOptions.length) {
+                    button.textContent = displayOptions[index];
+                    // IMPORTANT: Store the *actual* answer value (which might not be the button text if shuffled)
+                    // We need to check against the original correctAnswer
+                    button.dataset.answer = displayOptions[index];
+                    button.disabled = false;
+                    button.onclick = () => selectAnswer(button, currentQuestion.correctAnswer); // Pass correct answer to handler
+                    button.classList.remove('hidden');
+                } else {
+                     button.classList.add('hidden');
+                }
+            });
+        }
+
+        // Modified selectAnswer to take the correct answer explicitly
+        function selectAnswer(selectedButton, correctAnswer) {
+             answerButtons.forEach(button => button.disabled = true);
+
+            const selectedAnswer = selectedButton.dataset.answer; // Get the game name from the button clicked
+
+            let correctButton;
+            answerButtons.forEach(button => {
+                // Find the button whose text *is* the correct answer
+                if (button.dataset.answer === correctAnswer) {
+                    correctButton = button;
+                }
+            });
+
+            if (selectedAnswer === correctAnswer) {
+                score++;
+                selectedButton.classList.add('correct');
+            } else {
+                selectedButton.classList.add('incorrect');
+                if (correctButton) { // Ensure correctButton was found
+                    correctButton.classList.add('correct');
+                } else {
+                    console.error("Could not find the button corresponding to the correct answer:", correctAnswer);
+                }
+            }
+
+            const totalQuestionsInRound = shuffledQuestions.length;
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < totalQuestionsInRound) {
+                    loadQuestion();
+                } else {
+                    showResults(totalQuestionsInRound);
+                }
+            }, 1500); // 1.5 sec delay
+        }
+
+
+        function resetButtonStates() {
+            answerButtons.forEach(button => {
+                button.classList.remove('correct', 'incorrect', 'hidden');
+                button.disabled = false;
+                button.onclick = null;
+                button.dataset.answer = '';
+                button.textContent = '';
+            });
+            questionImage.classList.add('hidden');
+            fallbackTextElement.classList.add('hidden');
+            questionImage.src = '';
+            questionImage.alt = '';
+            questionImage.onload = null;
+            questionImage.onerror = null;
+            fallbackTextElement.textContent = '';
+        }
+
+        function showResults(totalQuestions) {
+            quizArea.classList.add('hidden');
+            resultsArea.classList.remove('hidden');
+            const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+            scoreElement.textContent = `Your Score: ${score} out of ${totalQuestions} (${percentage}%)`;
+        }
+
+        // --- Event Listeners ---
+        restartButton.addEventListener('click', startGame);
+
+        // --- Initial Game Start ---
+        document.addEventListener('DOMContentLoaded', startGame);
+
+    </script>
+
+</body>
+</html>
