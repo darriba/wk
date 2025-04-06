@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atari 2600 Game Quiz</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #111;
+            color: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #game-container {
+            background-color: #222;
+            border: 4px solid #888;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            color: #ffa500; /* Orange */
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px #000;
+        }
+
+        #question-area {
+            min-height: 210px; /* Ensure space for image/text */
+            margin-bottom: 25px;
+            background-color: #000;
+            border: 2px solid #555;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #question-image {
+            display: block;
+            max-width: 95%;
+            max-height: 190px;
+            object-fit: contain;
+            margin: auto;
+            border: 1px solid #444;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        #question-text {
+            font-size: 0.9em;
+            line-height: 1.6;
+            color: #0f0; /* Green */
+            padding: 10px;
+        }
+
+        #answer-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            background-color: #444;
+            color: #fff;
+            border: 2px solid #777;
+            padding: 15px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8em;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: #555;
+            transform: scale(1.02);
+        }
+
+        .btn:active:not(:disabled) {
+             transform: scale(0.98);
+        }
+
+        .btn.correct {
+            background-color: #00a000;
+            border-color: #00d000;
+            color: #fff;
+        }
+
+        .btn.incorrect {
+            background-color: #a00000;
+            border-color: #d00000;
+            color: #fff;
+        }
+
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        #results-area {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #333;
+            border: 2px solid #666;
+            border-radius: 5px;
+        }
+
+        #score {
+             font-size: 1.2em;
+             margin-bottom: 20px;
+             color: #ffff00;
+        }
+
+        #restart-btn {
+            background-color: #ffa500;
+            color: #000;
+            font-size: 1em;
+            padding: 15px 25px;
+        }
+         #restart-btn:hover {
+             background-color: #ffc500;
+         }
+
+        .hidden {
+            display: none;
+        }
+
+        #question-counter {
+            margin-bottom: 15px;
+            font-size: 0.8em;
+            color: #aaa;
+        }
+
+        @media (max-width: 480px) {
+             h1 { font-size: 1.2em; }
+            .btn { font-size: 0.7em; padding: 12px; }
+            #question-text { font-size: 0.8em; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>Atari 2600 Quiz!</h1>
+
+        <div id="quiz-area">
+            <div id="question-counter">Question X of 10</div>
+            <div id="question-area">
+                <img id="question-image" src="" alt="Atari Game Screenshot" class="hidden">
+                <p id="question-text" class="hidden"></p>
+            </div>
+            <div id="answer-buttons">
+                <button class="btn" id="btn0">Answer 1</button>
+                <button class="btn" id="btn1">Answer 2</button>
+                <button class="btn" id="btn2">Answer 3</button>
+            </div>
+        </div>
+
+        <div id="results-area" class="hidden">
+            <h2>Game Over!</h2>
+            <p id="score">Your Score: 0%</p>
+            <button class="btn" id="restart-btn">Play Again?</button>
+        </div>
+    </div>
+
+    <script>
+        const questionArea = document.getElementById('question-area');
+        const questionImage = document.getElementById('question-image');
+        const questionText = document.getElementById('question-text');
+        const answerButtonsElement = document.getElementById('answer-buttons');
+        const answerButtons = [
+            document.getElementById('btn0'),
+            document.getElementById('btn1'),
+            document.getElementById('btn2')
+        ];
+        const resultsArea = document.getElementById('results-area');
+        const scoreElement = document.getElementById('score');
+        const restartButton = document.getElementById('restart-btn');
+        const quizArea = document.getElementById('quiz-area');
+        const questionCounterElement = document.getElementById('question-counter');
+
+        // --- Game Data ---
+        // NOTE: Screenshot URLs are hotlinked directly from AtariAge.
+        // This relies on their site structure remaining stable and permission being implicit.
+        // This list needs significant manual expansion to reach 200+ games.
+        const gameQuestions = [
+            // --- Text Questions ---
+            { type: 'text', content: "In this game, you're a yellow circle munching dots in a maze while avoiding ghosts named Blinky, Pinky, Inky, and Clyde.", options: ["Pac-Man", "Ms. Pac-Man", "Jawbreaker"], correctAnswer: "Pac-Man" },
+            { type: 'text', content: "Shoot descending rows of aliens before they reach the bottom. You can hide behind destructible barriers.", options: ["Galaxian", "Space Invaders", "Phoenix"], correctAnswer: "Space Invaders" },
+            { type: 'text', content: "Pilot a spaceship in a vector-style asteroid field, shooting rocks and avoiding collisions. Features hyperspace.", options: ["Gravitar", "Asteroids", "Space War"], correctAnswer: "Asteroids" },
+            { type: 'text', content: "A plumber navigates girders, climbing ladders and jumping over barrels thrown by a large ape to save a damsel.", options: ["Mario Bros.", "Popeye", "Donkey Kong"], correctAnswer: "Donkey Kong" },
+            { type: 'text', content: "Control a frog trying to cross a busy road and a hazardous river to reach home.", options: ["Freeway", "Frogger", "Frogs and Flies"], correctAnswer: "Frogger" },
+            { type: 'text', content: "Navigate Pitfall Harry through jungle scenes, swinging on vines, jumping over pits, crocodiles, and scorpions.", options: ["Adventure", "Pitfall!", "Jungle Hunt"], correctAnswer: "Pitfall!" },
+            { type: 'text', content: "You are a square 'dot' exploring castles and mazes, finding keys to unlock doors, and avoiding dragons.", options: ["Haunted House", "Superman", "Adventure"], correctAnswer: "Adventure" },
+            { type: 'text', content: "Defend cities from incoming missile attacks launched from above using three bases.", options: ["Missile Command", "Atlantis", "Air Raiders"], correctAnswer: "Missile Command" },
+            { type: 'text', content: "Shoot segments of a wriggling arthropod as it descends through a mushroom field, while also dealing with spiders and fleas.", options: ["Millipede", "Centipede", "Galaga"], correctAnswer: "Centipede" },
+            { type: 'text', content: "Control paddles to deflect a ball and break bricks arranged at the top of the screen.", options: ["Breakout", "Warlords", "Super Breakout"], correctAnswer: "Breakout" },
+            { type: 'text', content: "You are a humanoid figure navigating rooms filled with robots that shoot lasers. Touching walls or robots is lethal. Beware Evil Otto!", options: ["Robot Tank", "Berzerk", "Venture"], correctAnswer: "Berzerk" },
+            { type: 'text', content: "Two tanks battle in a simple maze-like environment. Includes options like guided missiles and bouncing shots.", options: ["Armor Ambush", "Combat", "Tank Plus"], correctAnswer: "Combat" },
+            { type: 'text', content: "Catch bombs dropped by a mad bomber using buckets of water.", options: ["Kaboom!", "Circus Atari", "Avalanche"], correctAnswer: "Kaboom!" },
+            { type: 'text', content: "Fly a ship horizontally, rescuing humanoids from alien abduction.", options: ["Chopper Command", "Defender", "Stargate"], correctAnswer: "Defender" },
+            { type: 'text', content: "Search a haunted mansion for pieces of an urn, navigating dark rooms with matches while avoiding bats, spiders, and a ghost.", options: ["Frankenstein's Monster", "Haunted House", "Ghost Manor"], correctAnswer: "Haunted House" },
+            { type: 'text', content: "Players control paddles at the corners of the screen, defending their castle walls from a bouncing fireball.", options: ["Demons to Diamonds", "Warlords", "Pong Sports"], correctAnswer: "Warlords" },
+            { type: 'text', content: "Collect treasures in a multi-level pyramid while avoiding mummies and bats. Use a Scepter to temporarily stun enemies.", options: ["Pharaoh's Curse", "Tutankham", "Riddle of the Sphinx"], correctAnswer: "Tutankham" },
+            { type: 'text', content: "Maneuver a ship through caverns, destroying fuel depots and escaping the gravity pull before fuel runs out.", options: ["Gravitar", "Lunar Lander", "Solaris"], correctAnswer: "Gravitar" },
+            { type: 'text', content: "Control a pair of scissors to cut specific colored threads on a loom before time runs out.", options: ["Spider Fighter", "Amidar", "Demon Attack"], correctAnswer: "Amidar" },
+            { type: 'text', content: "Defend your ship at the bottom from waves of bird-like attackers and swooping motherships.", options: ["Phoenix", "Gyruss", "Galaxian"], correctAnswer: "Phoenix" },
+
+            // --- Image Questions (Using actual AtariAge URLs) ---
+            {
+                type: 'image',
+                content: "https://atariage.com/2600/screenshots/s_YarsRevenge_2.png", // Actual URL from AtariAge
+                descriptionForAlt: "Screenshot showing the Yar shooting its zorlon cannon.",
+                options: ["Yars' Revenge", "Star Raiders", "Cosmic Ark"],
+                correctAnswer: "Yars' Revenge"
+            },
+            {
+                type: 'image',
+                content: "https://atariage.com/2600/screenshots/s_RiverRaid_1.png", // Actual URL from AtariAge
+                descriptionForAlt: "Screenshot of a jet flying vertically up a river, shooting a bridge.",
+                options: ["River Raid", "Chopper Command", "Zaxxon"],
+                correctAnswer: "River Raid"
+            },
+            {
+                type: 'image',
+                content: "https://atariage.com/2600/screenshots/s_Adventure_2.png", // Actual URL from AtariAge (shows dragon)
+                descriptionForAlt: "Screenshot showing the square hero near the yellow dragon Yorgle.",
+                options: ["Haunted House", "Superman", "Adventure"],
+                correctAnswer: "Adventure"
+            },
+            {
+                type: 'image',
+                content: "https://atariage.com/2600/screenshots/s_Pitfall_1.png", // Actual URL from AtariAge
+                descriptionForAlt: "Screenshot of Pitfall Harry jumping over rolling logs in the jungle.",
+                options: ["Jungle Hunt", "Pitfall!", "Montezuma's Revenge"],
+                correctAnswer: "Pitfall!"
+            },
+            {
+                type: 'image',
+                content: "https://atariage.com/2600/screenshots/s_MissileCommand_1.png", // Actual URL from AtariAge
+                descriptionForAlt: "Screenshot showing missile trails heading towards cities at the bottom.",
+                options: ["Atlantis", "Space Invaders", "Missile Command"],
+                correctAnswer: "Missile Command"
+            },
+             {
+                type: 'image',
+                content: "https://atariage.com/2600/screenshots/s_Combat_Tanks.png", // Actual URL from AtariAge
+                descriptionForAlt: "Screenshot showing two simple tanks facing each other in Combat.",
+                options: ["Combat", "Armor Ambush", "Battlezone"],
+                correctAnswer: "Combat"
+            },
+             {
+                type: 'image',
+                content: "https://atariage.com/2600/screenshots/s_Centipede_1.png", // Actual URL from AtariAge
+                descriptionForAlt: "Screenshot of the player ship shooting at a centipede segment amidst mushrooms.",
+                options: ["Millipede", "Galaga", "Centipede"],
+                correctAnswer: "Centipede"
+            },
+             {
+                type: 'image',
+                content: "https://atariage.com/2600/screenshots/s_PacMan_2.png", // Actual URL from AtariAge
+                descriptionForAlt: "Screenshot of Pac-Man eating dots while being chased by ghosts.",
+                options: ["Ms. Pac-Man", "Pac-Man", "Jawbreaker"],
+                correctAnswer: "Pac-Man"
+            },
+             {
+                type: 'image',
+                content: "https://atariage.com/2600/screenshots/s_Breakout_1.png", // Actual URL from AtariAge
+                descriptionForAlt: "Screenshot showing a paddle hitting a ball towards rows of colored bricks.",
+                options: ["Super Breakout", "Warlords", "Breakout"],
+                correctAnswer: "Breakout"
+            },
+             {
+                type: 'image',
+                content: "https://atariage.com/2600/screenshots/s_Frogger_2.png", // Actual URL from AtariAge (river part)
+                descriptionForAlt: "Screenshot showing Frogger trying to jump on logs and turtles in the river.",
+                options: ["Frogs and Flies", "Frogger", "Freeway"],
+                correctAnswer: "Frogger"
+            }
+            // TO ADD MORE:
+            // 1. Pick an Atari 2600 game.
+            // 2. Go to its screenshot page on AtariAge (e.g., https://atariage.com/screenshot_page.php?SoftwareID=XXX&SystemID=2600)
+            // 3. Find a good screenshot image.
+            // 4. Right-click the image -> "Copy Image Address" (or similar).
+            // 5. Create a new question object below like the examples.
+            // 6. Set type: 'image'.
+            // 7. Paste the copied URL into the 'content' field.
+            // 8. Add a 'descriptionForAlt'.
+            // 9. Add the correct 'options' array.
+            // 10. Set the 'correctAnswer'.
+            // 11. Repeat ~170 more times for a pool of 200+.
+        ];
+
+        let currentQuestionIndex;
+        let score;
+        let shuffledQuestions;
+        const questionsPerRound = 10;
+
+        // --- Utility Functions ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // --- Game Logic Functions ---
+        function startGame() {
+            score = 0;
+            currentQuestionIndex = 0;
+             const availableQuestions = gameQuestions.length;
+             const numQuestionsThisRound = Math.min(questionsPerRound, availableQuestions); // Use minimum
+
+             if (availableQuestions < questionsPerRound) {
+                 console.warn(`Warning: Only ${availableQuestions} questions available, less than the desired ${questionsPerRound}. Using ${availableQuestions} questions this round.`);
+             }
+
+             shuffledQuestions = [...gameQuestions];
+             shuffleArray(shuffledQuestions);
+             // Slice according to the actual number we can use
+             shuffledQuestions = shuffledQuestions.slice(0, numQuestionsThisRound);
+
+            resultsArea.classList.add('hidden');
+            quizArea.classList.remove('hidden');
+            resetButtonStates();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            resetButtonStates();
+            const totalQuestionsInRound = shuffledQuestions.length; // Base decisions on the actual round length
+            if (currentQuestionIndex >= totalQuestionsInRound) {
+                showResults(totalQuestionsInRound);
+                return;
+            }
+
+            questionCounterElement.textContent = `Question ${currentQuestionIndex + 1} of ${totalQuestionsInRound}`;
+            const currentQuestion = shuffledQuestions[currentQuestionIndex];
+
+            questionImage.classList.add('hidden');
+            questionText.classList.add('hidden');
+            questionImage.src = "";
+            questionImage.alt = "";
+            questionText.textContent = "";
+
+            if (currentQuestion.type === 'image' && currentQuestion.content) {
+                // Set up image load/error handlers *before* setting src
+                questionImage.onload = () => {
+                    // Image loaded successfully, make it visible
+                    questionImage.classList.remove('hidden');
+                    questionText.classList.add('hidden'); // Ensure text is hidden
+                };
+                questionImage.onerror = () => {
+                    // Image failed (broken link, hotlink protection, etc.)
+                    console.error(`Failed to load image: ${currentQuestion.content}`);
+                    // Fallback to showing text or a placeholder message
+                    questionText.textContent = `[Image for ${currentQuestion.correctAnswer} could not be loaded] - ${currentQuestion.descriptionForAlt || 'Guess based on options!'}`;
+                    questionText.classList.remove('hidden');
+                    questionImage.classList.add('hidden');
+                };
+
+                questionImage.src = currentQuestion.content; // Assign src AFTER handlers are set
+                questionImage.alt = currentQuestion.descriptionForAlt || "Atari Game Screenshot";
+
+            } else { // type === 'text' or image has no content string
+                questionText.textContent = currentQuestion.content;
+                questionText.classList.remove('hidden');
+                questionImage.classList.add('hidden');
+            }
+
+            let displayOptions = [...currentQuestion.options];
+            shuffleArray(displayOptions);
+
+            answerButtons.forEach((button, index) => {
+                if (index < displayOptions.length) {
+                    button.textContent = displayOptions[index];
+                    button.dataset.answer = displayOptions[index];
+                    button.disabled = false;
+                    button.onclick = () => selectAnswer(button);
+                    button.classList.remove('hidden');
+                } else {
+                     button.classList.add('hidden');
+                }
+            });
+        }
+
+        function selectAnswer(selectedButton) {
+             answerButtons.forEach(button => button.disabled = true);
+
+            const selectedAnswer = selectedButton.dataset.answer;
+            const correctAnswer = shuffledQuestions[currentQuestionIndex].correctAnswer;
+
+            let correctButton;
+            answerButtons.forEach(button => {
+                if (button.dataset.answer === correctAnswer) {
+                    correctButton = button;
+                }
+            });
+
+            if (selectedAnswer === correctAnswer) {
+                score++;
+                selectedButton.classList.add('correct');
+            } else {
+                selectedButton.classList.add('incorrect');
+                if (correctButton) {
+                    correctButton.classList.add('correct');
+                }
+            }
+
+            const totalQuestionsInRound = shuffledQuestions.length;
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < totalQuestionsInRound) {
+                    loadQuestion();
+                } else {
+                    showResults(totalQuestionsInRound);
+                }
+            }, 1500);
+        }
+
+        function resetButtonStates() {
+            answerButtons.forEach(button => {
+                button.classList.remove('correct', 'incorrect', 'hidden');
+                button.disabled = false;
+                button.onclick = null;
+                button.dataset.answer = '';
+                button.textContent = '';
+            });
+            questionImage.classList.add('hidden');
+            questionText.classList.add('hidden');
+            questionImage.src = ''; // Stop loading previous image if any
+            questionImage.alt = '';
+            questionImage.onload = null; // Remove previous handlers
+            questionImage.onerror = null;
+            questionText.textContent = '';
+        }
+
+        function showResults(totalQuestions) {
+            quizArea.classList.add('hidden');
+            resultsArea.classList.remove('hidden');
+            const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+            scoreElement.textContent = `Your Score: ${score} out of ${totalQuestions} (${percentage}%)`;
+        }
+
+        // --- Event Listeners ---
+        restartButton.addEventListener('click', startGame);
+
+        // --- Initial Game Start ---
+        document.addEventListener('DOMContentLoaded', startGame);
+
+    </script>
+
+</body>
+</html>
