@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japanese Learner - Wanikani</title>
+    <!-- Include WanaKana.js for Romaji <-> Kana conversion -->
+    <script src="https://unpkg.com/wanakana"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top */
+            min-height: 100vh;
+        }
+
+        #app-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2a3b4c;
+            margin-bottom: 25px;
+        }
+
+        .config-section, .study-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            background-color: #fdfdfd;
+        }
+
+        .config-section h2, .study-section h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #4a5a6a;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 15px; /* Maintain spacing */
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="number"] {
+            width: calc(100% - 22px); /* Account for padding and border */
+            padding: 10px;
+            /* Removed margin-bottom from input, handled by wrapper */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box; /* Include padding and border in element's total width */
+        }
+
+        /* Adjust password input padding to make space for the icon */
+        input[type="password"],
+        input[type="text"]#wanikani-key { /* Also target when type is text */
+             padding-right: 40px; /* More space for the eye */
+        }
+
+
+        .toggle-visibility {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            user-select: none; /* Prevent text selection */
+            font-size: 1.2rem;
+             color: #888;
+        }
+        .toggle-visibility:hover {
+            color: #555;
+        }
+
+
+        input[type="number"] {
+             width: 80px; /* Smaller width for level inputs */
+        }
+
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+            margin-right: 10px; /* Spacing between buttons */
+            margin-top: 5px; /* Add some top margin for button row */
+            margin-bottom: 5px;
+        }
+        /* Style for secondary action button */
+        button.secondary {
+             background-color: #6c757d;
+        }
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+         .config-buttons {
+            margin-top: 15px; /* Add space above buttons */
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            gap: 10px; /* Add gap between buttons */
+         }
+
+
+        #prompt {
+            font-size: 2.5rem; /* Larger font for Japanese prompt */
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 60px; /* Ensure space even if empty */
+        }
+
+        #prompt.english-prompt {
+            font-size: 1.5rem; /* Slightly smaller for English prompts */
+        }
+
+        /* Kana preview is now hidden by default when WanaKana is bound directly */
+        #kana-preview {
+            font-size: 1.8rem;
+            color: #555;
+            text-align: center;
+            margin-top: -10px;
+            margin-bottom: 15px;
+            min-height: 30px;
+            background-color: #f8f9fa;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        #user-input {
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        /* Ensure Japanese font is used when WanaKana converts input */
+        #user-input.wanakana-bound {
+            font-family: 'Meiryo', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif; /* Example Japanese fonts */
+            font-size: 1.4rem; /* Maybe slightly larger for Kana */
+        }
+
+
+        #feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+            /* Default font size */
+            font-size: 1.1rem;
+            line-height: 1.8; /* Ensure ruby doesn't overlap lines */
+        }
+
+        /* Class to increase size of Japanese text within feedback */
+        .japanese-feedback {
+            font-size: 1.6em; /* Make Japanese significantly larger */
+            /* Vertical alignment might need slight adjustment */
+            vertical-align: middle;
+            margin: 0 0.2em; /* Add a little space around it */
+        }
+
+        #feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        #feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Style for Ruby characters */
+        ruby rt {
+            font-size: 0.6em; /* Slightly smaller relative to larger base */
+            color: #444;
+            opacity: 0.9;
+        }
+        ruby rb { /* Base text */
+             /* No specific style needed usually */
+        }
+
+
+        #status {
+            text-align: center;
+            margin-top: 15px;
+            font-style: italic;
+            color: #666;
+            min-height: 1.2em; /* Reserve space */
+        }
+        #status.success {
+             color: #155724; /* Green for success */
+             font-weight: bold;
+        }
+         #status.error {
+             color: #721c24; /* Red for error */
+             font-weight: bold;
+         }
+
+
+        .hidden {
+            display: none;
+        }
+
+        .control-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+         /* Specific styles for EN -> JP mode input */
+         /* No longer need text-transform or monospace here */
+         /* #user-input.en-to-jp-input { } */
+
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <h1>Wanikani Study Tool</h1>
+
+        <div id="config-section" class="config-section">
+            <h2>Configuration</h2>
+            <p>Please provide your Wanikani API key and desired maximum level.</p>
+
+            <label for="wanikani-key">Wanikani API Key (v2):</label>
+            <div class="input-wrapper">
+                <input type="password" id="wanikani-key" placeholder="Enter Wanikani API Key">
+                <span id="toggle-wk-key-visibility" class="toggle-visibility" title="Toggle visibility">👁️</span>
+            </div>
+
+
+            <label for="wanikani-level">Wanikani Max Level:</label>
+            <input type="number" id="wanikani-level" min="1" max="60" value="10">
+
+            <div class="config-buttons">
+                 <button id="test-connection-btn" class="secondary">Test Connection</button>
+                 <button id="load-data-btn">Load Data & Start</button>
+            </div>
+
+        </div>
+
+        <div id="study-section" class="study-section hidden">
+             <h2>Study Session</h2>
+             <div id="prompt" lang="ja"></div>
+             <!-- Kana preview is generally hidden in enToJp mode now -->
+             <div id="kana-preview" lang="ja" class="hidden"></div>
+             <input type="text" id="user-input" placeholder="Type your answer here" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+
+             <div id="feedback"></div>
+
+             <div class="control-buttons">
+                 <button id="check-answer-btn">Check Answer</button>
+                 <button id="next-item-btn" disabled>Next</button>
+            </div>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const configSection = document.getElementById('config-section');
+        const studySection = document.getElementById('study-section');
+        const wanikaniKeyInput = document.getElementById('wanikani-key');
+        const toggleWkKeyVisibility = document.getElementById('toggle-wk-key-visibility');
+        const wanikaniLevelInput = document.getElementById('wanikani-level');
+        const loadDataBtn = document.getElementById('load-data-btn');
+        const testConnectionBtn = document.getElementById('test-connection-btn');
+        const promptElement = document.getElementById('prompt');
+        const kanaPreviewElement = document.getElementById('kana-preview');
+        const userInput = document.getElementById('user-input');
+        const feedbackElement = document.getElementById('feedback');
+        const checkAnswerBtn = document.getElementById('check-answer-btn');
+        const nextItemBtn = document.getElementById('next-item-btn');
+        const statusElement = document.getElementById('status');
+
+        // --- State Variables ---
+        let wanikaniData = [];
+        let combinedData = [];
+        let currentItem = null;
+        let currentMode = null; // 'jpToEn' or 'enToJp'
+        let wanakanaBound = false; // Track if wanakana is bound *directly* to input
+
+        // --- Constants ---
+        const WANIKANI_API_BASE = 'https://api.wanikani.com/v2';
+
+        // --- Event Listeners ---
+        loadDataBtn.addEventListener('click', loadData);
+        testConnectionBtn.addEventListener('click', testWanikaniConnection);
+        checkAnswerBtn.addEventListener('click', checkAnswer);
+        nextItemBtn.addEventListener('click', displayNextItem);
+        // userInput.addEventListener('input', handleInput); // Removed: WanaKana handles input directly when bound
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                 event.preventDefault();
+                if (!checkAnswerBtn.disabled) {
+                    checkAnswer();
+                } else if (!nextItemBtn.disabled) {
+                    displayNextItem();
+                }
+            }
+        });
+        toggleWkKeyVisibility.addEventListener('click', () => {
+            const currentType = wanikaniKeyInput.getAttribute('type');
+            if (currentType === 'password') {
+                wanikaniKeyInput.setAttribute('type', 'text');
+                toggleWkKeyVisibility.textContent = '🔒';
+                toggleWkKeyVisibility.setAttribute('title', 'Hide API Key');
+            } else {
+                wanikaniKeyInput.setAttribute('type', 'password');
+                toggleWkKeyVisibility.textContent = '👁️';
+                toggleWkKeyVisibility.setAttribute('title', 'Show API Key');
+            }
+        });
+
+
+        // --- Functions ---
+
+        async function testWanikaniConnection() {
+            const wkKey = wanikaniKeyInput.value.trim();
+            if (!wkKey) {
+                setStatus('Please enter a Wanikani API Key to test.', 'error');
+                return;
+            }
+
+            setStatus('Testing connection...');
+            testConnectionBtn.disabled = true;
+            loadDataBtn.disabled = true;
+
+            try {
+                const headers = { 'Authorization': `Bearer ${wkKey}` };
+                const response = await fetch(`${WANIKANI_API_BASE}/user`, { headers });
+
+                if (response.ok) {
+                    setStatus('Connection Successful!', 'success');
+                } else {
+                    if (response.status === 401) {
+                        setStatus('Connection Failed: Invalid or Unauthorized API Key.', 'error');
+                    } else {
+                        setStatus(`Connection Failed: ${response.status} ${response.statusText}`, 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Wanikani connection test error:', error);
+                setStatus(`Connection Failed: Network error or API unreachable. (${error.message})`, 'error');
+            } finally {
+                 testConnectionBtn.disabled = false;
+                 loadDataBtn.disabled = false;
+                 setTimeout(() => {
+                    if (statusElement.textContent.startsWith('Connection S') || statusElement.textContent.startsWith('Connection F')) {
+                       setStatus('');
+                    }
+                 }, 5000);
+            }
+        }
+
+
+        async function loadData() {
+            const wkKey = wanikaniKeyInput.value.trim();
+            const wkLevel = parseInt(wanikaniLevelInput.value, 10);
+
+            if (!wkKey) {
+                setStatus('Error: Please provide the Wanikani API Key.', 'error');
+                return;
+            }
+            if (isNaN(wkLevel) || wkLevel < 1 || wkLevel > 60) {
+                 setStatus('Error: Please enter a valid number for the Wanikani level (1-60).', 'error');
+                 return;
+            }
+
+            setStatus('Loading data... Please wait.');
+            loadDataBtn.disabled = true;
+            testConnectionBtn.disabled = true;
+            combinedData = [];
+            wanikaniData = [];
+
+            try {
+                wanikaniData = await fetchWanikaniData(wkKey, wkLevel);
+
+                console.log(`Fetched ${wanikaniData.length} Wanikani items.`);
+
+                // --- Process Wanikani Data ---
+                 wanikaniData.forEach(item => {
+                     if (!item || !item.characters || !item.meanings || item.meanings.length === 0 || !item.readings || item.readings.length === 0) {
+                         console.warn("Skipping invalid or incomplete Wanikani item:", item);
+                         return;
+                     }
+                     const primaryMeaning = item.meanings.find(m => m.primary);
+                     const otherMeanings = item.meanings.filter(m => !m.primary);
+                     const allMeanings = (primaryMeaning ? [primaryMeaning] : []).concat(otherMeanings);
+
+                     const primaryReadingObj = item.readings.find(r => r.primary);
+                     const otherReadings = item.readings.filter(r => !r.primary);
+                     const primaryReading = primaryReadingObj ? primaryReadingObj.reading : (otherReadings.length > 0 ? otherReadings[0].reading : null);
+
+
+                    if (!primaryReading || allMeanings.length === 0) {
+                        console.warn(`Skipping Wanikani item because primary reading or meaning couldn't be determined: ${item.characters}`, item);
+                        return;
+                    }
+
+                    combinedData.push({
+                        type: 'vocab',
+                        source: 'Wanikani',
+                        promptJP: item.characters,
+                        promptEN: allMeanings.map(m => m.meaning).join(', '),
+                        answerJP: item.characters,
+                        answerJPReading: primaryReading,
+                        answerEN: allMeanings.map(m => m.meaning.toLowerCase()),
+                        level: item.level
+                    });
+                });
+
+
+                if (combinedData.length === 0 && wanikaniData.length > 0) {
+                     setStatus('Fetched data, but could not process any items (missing readings/meanings?). Check console.', 'error');
+                     loadDataBtn.disabled = false;
+                     testConnectionBtn.disabled = false;
+                     return;
+                } else if (combinedData.length === 0) {
+                     setStatus('No Wanikani data loaded. Check API key, level, ensure items exist for that level, or check console for errors.', 'error');
+                     loadDataBtn.disabled = false;
+                     testConnectionBtn.disabled = false;
+                     return;
+                 }
+
+
+                shuffleArray(combinedData);
+                setStatus('');
+                configSection.classList.add('hidden');
+                studySection.classList.remove('hidden');
+                displayNextItem();
+
+            } catch (error) {
+                console.error('Error during data loading process:', error);
+                setStatus(`An error occurred during loading: ${error.message}`, 'error');
+                loadDataBtn.disabled = false;
+                testConnectionBtn.disabled = false;
+            }
+        }
+
+        async function fetchWanikaniData(apiKey, maxLevel) {
+            let allSubjects = [];
+            let url = `${WANIKANI_API_BASE}/subjects?types=vocabulary&levels=${Array.from({length: maxLevel}, (_, i) => i + 1).join(',')}`;
+            const headers = { 'Authorization': `Bearer ${apiKey}` };
+            let currentPage = 1;
+
+            setStatus('Fetching Wanikani data (page 1)...');
+
+            while (url) {
+                try {
+                    const response = await fetch(url, { headers });
+                    if (!response.ok) {
+                        if (response.status === 401) throw new Error('Wanikani API key is invalid or unauthorized.');
+                        throw new Error(`Wanikani API request failed: ${response.status} ${response.statusText}`);
+                    }
+                    const data = await response.json();
+                    if (data && data.data) {
+                        const vocabItems = data.data.map(item => ({
+                            id: item.id,
+                            level: item.data.level,
+                            characters: item.data.characters,
+                            meanings: item.data.meanings || [],
+                            readings: item.data.readings || [],
+                        }));
+                        allSubjects = allSubjects.concat(vocabItems);
+                    } else {
+                        console.warn("Received unexpected data structure from Wanikani API:", data);
+                    }
+
+                    url = data.pages?.next_url;
+                    if (url) {
+                        currentPage++;
+                        setStatus(`Fetching Wanikani data (page ${currentPage})...`);
+                    }
+
+                } catch (error) {
+                    console.error("Error fetching Wanikani page:", error);
+                    setStatus(`Error fetching Wanikani page ${currentPage}: ${error.message}. Attempting to use data fetched so far.`, 'error');
+                     if (error.message.includes('Unauthorized')) {
+                        throw error;
+                     }
+                    url = null;
+                }
+            }
+            if (!allSubjects.length && currentPage === 1 && !statusElement.textContent.includes('Error')) {
+                 setStatus('Wanikani data fetch complete, but no items found for the selected levels.', 'error');
+            } else if (statusElement.textContent.startsWith('Fetching')) {
+                 setStatus('Wanikani data fetch complete.');
+            }
+            return allSubjects;
+        }
+
+
+        function displayNextItem() {
+            if (combinedData.length === 0) {
+                setStatus('Congratulations! You have completed all items.', 'success');
+                promptElement.textContent = '🎉';
+                userInput.value = '';
+                userInput.disabled = true;
+                checkAnswerBtn.disabled = true;
+                nextItemBtn.disabled = true;
+                 hideKanaPreview(); // Ensure preview is hidden
+                 unbindWanaKana(); // Ensure WanaKana is unbound
+                 feedbackElement.innerHTML = '';
+                return;
+            }
+
+            currentItem = combinedData.pop();
+            unbindWanaKana(); // Unbind from previous item first
+
+            let possibleModes = [];
+            if (currentItem.answerEN && currentItem.answerEN.length > 0) possibleModes.push('jpToEn');
+            if (currentItem.answerJPReading) possibleModes.push('enToJp');
+
+
+             if (possibleModes.length === 0) {
+                 console.warn("Skipping item with insufficient data for any mode:", currentItem);
+                 setStatus('Skipped item due to missing data.', 'error')
+                  setTimeout(() => { if (statusElement.textContent.startsWith('Skipped')) setStatus(''); }, 2000);
+                 displayNextItem();
+                 return;
+             }
+            currentMode = possibleModes[Math.floor(Math.random() * possibleModes.length)];
+
+            // Reset input styles/attributes common to both modes
+            userInput.lang = '';
+            userInput.classList.remove('en-to-jp-input', 'wanakana-bound'); // Remove specific classes
+
+            if (currentMode === 'jpToEn') {
+                promptElement.textContent = currentItem.promptJP;
+                promptElement.lang = 'ja';
+                promptElement.classList.remove('english-prompt');
+                userInput.placeholder = 'Type English meaning';
+                userInput.lang = 'en'; // Set lang for potential input methods
+                hideKanaPreview(); // No preview needed
+                // No WanaKana binding needed
+            } else { // enToJp
+                promptElement.textContent = currentItem.promptEN;
+                promptElement.lang = 'en';
+                promptElement.classList.add('english-prompt');
+                userInput.placeholder = 'Type reading (Romaji to Kana)'; // Updated placeholder
+                userInput.lang = 'ja'; // Set lang for potential input methods
+                userInput.classList.add('en-to-jp-input'); // Keep this? Maybe not needed.
+                hideKanaPreview(); // Hide the separate preview div
+                bindWanaKana(); // Bind WanaKana for direct input conversion
+            }
+
+            userInput.value = '';
+            feedbackElement.innerHTML = '';
+            feedbackElement.className = '';
+            userInput.disabled = false;
+            checkAnswerBtn.disabled = false;
+            nextItemBtn.disabled = true;
+            userInput.focus();
+        }
+
+        // Removed handleInput function as it's no longer needed for preview
+
+        // Helper function to format Japanese with Ruby/Span
+        function formatJapaneseFeedback(chars, reading) {
+             let formatted;
+             if (reading && chars !== reading) {
+                 formatted = `<span class="japanese-feedback"><ruby><rb>${chars}</rb><rt>${reading}</rt></ruby></span>`;
+             } else {
+                 formatted = `<span class="japanese-feedback">${chars}</span>`;
+             }
+             return formatted;
+         }
+
+        function checkAnswer() {
+            if (!currentItem) return;
+
+            const userAnswer = userInput.value.trim();
+            let isCorrect = false;
+
+            feedbackElement.innerHTML = '';
+
+            const formattedCorrectJP = formatJapaneseFeedback(currentItem.answerJP, currentItem.answerJPReading);
+
+            if (currentMode === 'jpToEn') {
+                isCorrect = currentItem.answerEN.includes(userAnswer.toLowerCase());
+                if (isCorrect) {
+                    feedbackElement.innerHTML = `Correct! &nbsp; ${formattedCorrectJP}`;
+                    feedbackElement.className = 'correct';
+                } else {
+                    feedbackElement.innerHTML = `Incorrect. ${formattedCorrectJP} means: ${currentItem.answerEN.join(' / ')}`;
+                    feedbackElement.className = 'incorrect';
+                }
+            } else { // enToJp Mode
+                // User input is already Kana thanks to wanakana.bind
+                const userKana = userAnswer;
+                isCorrect = (userKana === currentItem.answerJPReading);
+
+                const correctRomaji = wanakana.toRomaji(currentItem.answerJPReading || currentItem.answerJP);
+
+                if (isCorrect) {
+                    feedbackElement.innerHTML = `Correct! &nbsp; ${formattedCorrectJP}`;
+                    feedbackElement.className = 'correct';
+                } else {
+                    feedbackElement.className = 'incorrect';
+                    // Show user's Kana attempt vs correct answer
+                    feedbackElement.innerHTML = `Incorrect. You typed: <span class="japanese-feedback">${userKana || '[empty]'}</span><br>Correct: ${formattedCorrectJP} (${correctRomaji})`;
+                }
+                // Unbind WanaKana *after* checking the answer in this mode
+                unbindWanaKana();
+            }
+
+            // Update UI state
+            userInput.disabled = true;
+            checkAnswerBtn.disabled = true;
+            nextItemBtn.disabled = false;
+            nextItemBtn.focus();
+            // WanaKana is now unbound via displayNextItem or explicitly in enToJp check
+        }
+
+
+        // --- WanaKana Integration ---
+        function bindWanaKana() {
+            if (!wanakanaBound) {
+                // Bind WanaKana directly to the input field
+                wanakana.bind(userInput, { IMEMode: true }); // IMEMode: true often gives better experience
+                userInput.classList.add('wanakana-bound'); // Add class for potential styling
+                wanakanaBound = true;
+                hideKanaPreview(); // Ensure preview div is hidden
+             }
+        }
+
+        function unbindWanaKana() {
+            if (wanakanaBound) {
+                // Unbind WanaKana from the input field
+                wanakana.unbind(userInput);
+                userInput.classList.remove('wanakana-bound'); // Remove class
+                wanakanaBound = false;
+                // No need to explicitly show preview here, handled by displayNextItem
+            }
+        }
+
+         // updateKanaPreview is no longer needed as WanaKana handles the input field directly
+
+         function showKanaPreview() {
+             // This might be repurposed later if needed, but for now, keep it hidden when WanaKana is bound.
+             if (!wanakanaBound) {
+                 kanaPreviewElement.classList.remove('hidden');
+             }
+         }
+         function hideKanaPreview() {
+             kanaPreviewElement.classList.add('hidden');
+             kanaPreviewElement.textContent = ''; // Also clear content
+         }
+
+
+        // --- Utility Functions ---
+        function setStatus(message, type = 'info') {
+            statusElement.textContent = message;
+            statusElement.className = '';
+            if (type === 'success') {
+                statusElement.classList.add('success');
+            } else if (type === 'error') {
+                 statusElement.classList.add('error');
+             }
+        }
+
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // --- Initial Setup ---
+        studySection.classList.add('hidden');
+        hideKanaPreview(); // Ensure preview is hidden initially
+        setStatus('');
+
+    </script>
+</body>
+</html>
