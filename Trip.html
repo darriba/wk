@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Itinerary Summary</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Attractive, widely available sans-serif fonts */
+            margin: 20px;
+            background-color: #f9f9f9; /* Light background for the page */
+            color: #333; /* Default text color */
+        }
+
+        h2 {
+            color: #2c3e50; /* Dark blue-grey for the title */
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .itinerary-table {
+            width: 100%;
+            border-collapse: collapse; /* Clean borders */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+            background-color: #fff; /* White background for the table */
+            overflow-x: auto; /* Add horizontal scroll for smaller screens if needed */
+            display: block; /* Needed for overflow-x to work correctly on tables */
+        }
+
+        .itinerary-table caption {
+            caption-side: bottom;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        .itinerary-table th,
+        .itinerary-table td {
+            border: 1px solid #ddd; /* Light grey borders */
+            padding: 12px 15px; /* Generous padding for readability */
+            text-align: left;
+            vertical-align: top; /* Align content to the top */
+        }
+
+        .itinerary-table thead th {
+            background-color: #3498db; /* Attractive blue header */
+            color: #ffffff; /* White text for header */
+            font-weight: bold;
+            text-transform: uppercase; /* Uppercase headers */
+            letter-spacing: 0.05em;
+        }
+
+        /* Zebra striping for rows */
+        .itinerary-table tbody tr:nth-of-type(even) {
+            background-color: #f2f7fc; /* Very light blue for even rows */
+        }
+
+        .itinerary-table tbody tr:hover {
+            background-color: #eaf2f8; /* Slightly darker blue on hover */
+        }
+
+        /* Specific column styling */
+        .itinerary-table td:first-child, /* Day column */
+        .itinerary-table th:first-child {
+             text-align: center;
+             font-weight: bold;
+             width: 3%; /* Narrower day column */
+        }
+         .itinerary-table td:nth-child(2), /* Date column */
+         .itinerary-table th:nth-child(2) {
+             width: 8%;
+             white-space: nowrap; /* Prevent date wrapping */
+         }
+          .itinerary-table th:nth-child(4), /* Activities column */
+          .itinerary-table td:nth-child(4) {
+             width: 30%; /* Give more space to activities */
+         }
+
+
+    </style>
+</head>
+<body>
+
+    <h2>Itinerary Summary Table</h2>
+
+    <table class="itinerary-table">
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Date</th>
+                <th>Location(s)</th>
+                <th>Key Activities / Sightseeing</th>
+                <th>Lunch Recommendation (Cuisine, Est. Cost)</th>
+                <th>Dinner Recommendation (Cuisine, Est. Cost)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>May 13 Tue</td>
+                <td>Dallas -&gt; Tokyo</td>
+                <td>Depart DFW (12:25 PM CDT)</td>
+                <td>In-flight</td>
+                <td>In-flight</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>May 14 Wed</td>
+                <td>Tokyo (Arrival)</td>
+                <td>Arrive HND (3:55 PM JST), Transfer to Kimpton Shinjuku, Settle in</td>
+                <td>Airport/Hotel vicinity snack</td>
+                <td>Fūunji (Ramen, ¥¥) or Udon Shin (Udon, ¥¥-¥¥¥) near hotel</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>May 15 Thu</td>
+                <td>Tokyo (Asakusa, Shiba)</td>
+                <td>Guided Tour: Asakusa (Senso-ji), Tokyo Tower (5:15 PM tickets)</td>
+                <td>Daikokuya Tempura (Tempura, ¥¥-¥¥¥) or Asakusa Mugitoro (Yam, ¥¥-¥¥¥)</td>
+                <td>Katsukura (Tonkatsu, ¥¥-¥¥¥) or Onigiri Manma (Onigiri, ¥) near hotel</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>May 16 Fri</td>
+                <td>Tokyo -&gt; Hakone</td>
+                <td>Train to Mishima, Guided Tour (Fuji Five Lakes, Caves, Pagoda), Check into Gora Kadan Ryokan</td>
+                <td>Hoto Fudo or similar (Hoto Noodles, ¥¥) during tour</td>
+                <td>Gora Kadan (Kaiseki, Included)</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>May 17 Sat</td>
+                <td>Hakone -&gt; Tokyo (Shinjuku, Shibuya)</td>
+                <td>Enjoy Ryokan, Train to Shinjuku, Yayoi Kusama Museum (4:00 PM tickets), Shibuya Crossing &amp; Exploration</td>
+                <td>Zuichou (Katsudon, ¥¥) or Ichiran (Ramen, ¥¥) in Shibuya</td>
+                <td>Maguro Mart (Izakaya/Tuna, ¥¥¥ - Nakano) or Shabusen (Shabu-Shabu, ¥¥¥-¥¥¥¥ - Shinjuku)</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>May 18 Sun</td>
+                <td>Tokyo (Harajuku, Ginza)</td>
+                <td>Explore Harajuku (Takeshita St, Meiji Jingu, Omotesando), Explore Ginza (Shopping, Depachika)</td>
+                <td>Harajuku Gyozaro (Gyoza, ¥) or Afuri (Ramen, ¥¥) in Harajuku</td>
+                <td>Sushiko Honten (Sushi, ¥¥¥¥) or Kagari Honten (Ramen, ¥¥) in Ginza</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>May 19 Mon</td>
+                <td>Tokyo (Akihabara, Funabashi, Oshiage)</td>
+                <td>Explore Akihabara, Daiso Giga Funabashi, Tokyo Skytree (Evening tickets)</td>
+                <td>Kikanbo (Spicy Ramen, ¥¥ - Kanda) or Go! Go! Curry! (Curry, ¥ - Akiba)</td>
+                <td>Rokurinsha (Tsukemen, ¥¥ - Tokyo Stn) or Butagumi (Tonkatsu, ¥¥¥-¥¥¥¥ - Roppongi)</td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>May 20 Tue</td>
+                <td>Tokyo (Tsukiji, Ryogoku)</td>
+                <td>Guided Tour: Tsukiji Outer Market (9 AM), Sumo Tournament (2:30 PM tickets)</td>
+                <td>Tsukiji Sushi (Sushi, ¥¥¥-¥¥¥¥) or Kitsuneya (Gyudon, ¥) in Tsukiji</td>
+                <td>Chanko Tomoegata (Chanko Nabe, ¥¥¥ - Ryogoku) or Bar Benfiddich (Bar, ¥¥¥ - Shinjuku)</td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>May 21 Wed</td>
+                <td>Tokyo (Ghibli)</td>
+                <td>Ghibli Museum &amp; Film Bus Tour (10:30 AM), Afternoon free</td>
+                <td>Tour-dependent or Kichijoji options (Various, ¥-¥¥¥)</td>
+                <td>Unagi Hashimoto (Eel, ¥¥¥-¥¥¥¥ - Bunkyo) or Sougo (Vegetarian, ¥¥¥¥ - Roppongi)</td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td>May 22 Thu</td>
+                <td>Tokyo -&gt; Nagoya</td>
+                <td>Train to Nagoya (flexible time), Check into Mercure Nagoya Cypress, Collect Ghibli tickets, Optional Nagoya sightseeing (Castle, Osu, Sakae, Toyota Museum)</td>
+                <td>Tokyo Station options or Yabaton (Miso Katsu, ¥¥) in Nagoya</td>
+                <td>Yamamotoya Sohonke (Miso Nikomi Udon, ¥¥) or Sekai no Yamachan (Izakaya, ¥¥)</td>
+            </tr>
+            <tr>
+                <td>11</td>
+                <td>May 23 Fri</td>
+                <td>Nagoya -&gt; Kyoto</td>
+                <td>Ghibli Park (Premium Pass, 10-11 AM Warehouse entry), Train to Kyoto, Check into Sora Niwa Terrace Kyoto Bettei</td>
+                <td>Ghibli Park options or Nagoya Station quick meal (Various, ¥-¥¥)</td>
+                <td>Yakiniku Hiro (Yakiniku, ¥¥¥-¥¥¥¥) or Gyoza Taizou (Gyoza, ¥-¥¥) near hotel</td>
+            </tr>
+            <tr>
+                <td>12</td>
+                <td>May 24 Sat</td>
+                <td>Kyoto (Arashiyama)</td>
+                <td>Guided Tour: Arashiyama (Tenryu-ji, Bamboo Grove), Philosopher's Path</td>
+                <td>Shoraian (Tofu Kaiseki, ¥¥¥¥) or Shigetsu (Vegetarian, ¥¥¥) in Arashiyama</td>
+                <td>Mouriya Gion (Teppanyaki, ¥¥¥¥) or Pontocho Alley (Various, ¥¥-¥¥¥¥) near hotel</td>
+            </tr>
+            <tr>
+                <td>13</td>
+                <td>May 25 Sun</td>
+                <td>Kyoto (Higashiyama, Gion)</td>
+                <td>Guided Tour: Kiyomizu-dera, Gion (9 AM), Nintendo Museum (3 PM tickets)</td>
+                <td>Wabiya Korekido (Oyakodon, ¥¥) or Hisago (Oyakodon/Noodles, ¥¥) in Gion</td>
+                <td>Mishima Tei (Sukiyaki, ¥¥¥¥) or Gion Rohan (Kappo, ¥¥¥-¥¥¥¥) near hotel</td>
+            </tr>
+            <tr>
+                <td>14</td>
+                <td>May 26 Mon</td>
+                <td>Kyoto (Hiroshima/Miyajima)</td>
+                <td>Guided Day Trip: Hiroshima Peace Park/Museum, Miyajima Island (Itsukushima Shrine)</td>
+                <td>Okonomimura (Okonomiyaki, ¥¥ - Hiroshima) or Kakiya (Oysters, ¥¥-¥¥¥ - Miyajima)</td>
+                <td>Kyoto Station options (Various, ¥-¥¥¥) or Masuya Saketen (Izakaya, ¥¥) near hotel</td>
+            </tr>
+            <tr>
+                <td>15</td>
+                <td>May 27 Tue</td>
+                <td>Kyoto -&gt; Osaka</td>
+                <td>Tea Ceremony (11 AM), Train to Osaka, Check into Zentis Osaka, Osaka Food Tour (6 PM)</td>
+                <td>Katsukura (Tonkatsu, ¥¥-¥¥¥) or Nishiki Market (Street Food, ¥-¥¥) in Kyoto</td>
+                <td>Included in Food Tour (Osaka Specialties)</td>
+            </tr>
+            <tr>
+                <td>16</td>
+                <td>May 28 Wed</td>
+                <td>Osaka (USJ)</td>
+                <td>Full Day at Universal Studios Japan (USJ)</td>
+                <td>In-park dining (Various Themed, ¥¥-¥¥¥)</td>
+                <td>Yakitori Ichimatsu (Yakitori, ¥¥¥¥) or Epais (Tonkatsu, ¥¥¥) near hotel</td>
+            </tr>
+            <tr>
+                <td>17</td>
+                <td>May 29 Thu</td>
+                <td>Osaka (Himeji Day Trip)</td>
+                <td>Self-Guided Day Trip: Himeji Castle, Koko-en Garden</td>
+                <td>Azumi (Himeji Beef, ¥¥¥-¥¥¥¥) or Kushiyaki Kobe beef (Skewers, ¥¥) in Himeji</td>
+                <td>Jibundoki (Okonomiyaki, ¥¥) or Moeyo Mensuke (Ramen, ¥¥) in Osaka</td>
+            </tr>
+            <tr>
+                <td>18</td>
+                <td>May 30 Fri</td>
+                <td>Osaka (Nara Day Trip)</td>
+                <td>Guided Day Trip: Nara Park (Deer), Todai-ji Temple, Kasuga Taisha Shrine, teamLab Botanical Garden (7:30 PM tickets)</td>
+                <td>Maguro Koya (Tuna, ¥¥) or Nakatanidou (Mochi, ¥) in Nara</td>
+                <td>Sekai Ichi Hima Na Ramen-ya (Ramen, ¥¥) near hotel or Hozenji Yokocho options</td>
+            </tr>
+            <tr>
+                <td>19</td>
+                <td>May 31 Sat</td>
+                <td>Osaka -&gt; Dallas</td>
+                <td>Morning free, Transfer to KIX, Depart KIX (2:35 PM JST)</td>
+                <td>Mon Cher (Cake/Pastries, ¥-¥¥) or KIX Airport options</td>
+                <td>In-flight</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
