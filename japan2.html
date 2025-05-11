@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japan Trip Itinerary Summary</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            margin: 20px; 
+            background-color: #f8f9fa; 
+            color: #333; 
+        }
+        h1 { 
+            text-align: center; 
+            color: #2c3e50; 
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin-bottom: 30px;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            background-color: #fff; 
+            font-size: 0.9em;
+            table-layout: fixed; /* Important for column width control */
+        }
+        th, td { 
+            border: 1px solid #dee2e6; 
+            padding: 10px 12px; 
+            text-align: left; 
+            vertical-align: top; 
+            word-wrap: break-word; /* Helps prevent overflow */
+        }
+        th { 
+            background-color: #4a90e2; /* Brighter Blue */
+            color: white; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-weight: bold;
+        }
+        /* Adjusting column widths */
+        th:nth-child(1), td:nth-child(1) { width: 4%; }  /* Day - Made narrower */
+        th:nth-child(2), td:nth-child(2) { width: 10%; } /* Date */
+        th:nth-child(3), td:nth-child(3) { width: 14%; } /* Location(s) */
+        th:nth-child(4), td:nth-child(4) { width: 12%; } /* Time - Made slightly wider */
+        th:nth-child(5), td:nth-child(5) { width: 30%; } /* Activity / Recommendation */
+        th:nth-child(6), td:nth-child(6) { width: 30%; } /* Details / Notes */
+
+        .day-header td {
+            background-color: #e9ecef;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #343a40;
+        }
+        .sightseeing { 
+            font-family: 'Verdana', Geneva, Tahoma, sans-serif; 
+            color: #28a745; /* Green */ 
+        }
+        .lunch { 
+            font-family: 'Georgia', 'Times New Roman', Times, serif; 
+            color: #fd7e14; /* Orange */ 
+        }
+        .dinner { 
+            font-family: 'Courier New', Courier, monospace; 
+            color: #dc3545; /* Red for non-reserved dinner names */ 
+        }
+        .reserved-restaurant-name {
+            color: #cc0000; /* Darker Red for reserved restaurant names */
+            font-weight: bold;
+        }
+        .reserved-activity-name {
+            color: #E67E22; /* Orange for reserved activity names */
+            font-weight: bold;
+        }
+        .travel { 
+            font-family: 'Tahoma', sans-serif; 
+            color: #6c757d; /* Grey */ 
+            font-style: italic;
+        }
+        .note { 
+            color: #ffc107; /* Amber for warning/notes */ 
+            font-style: italic;
+            font-weight: bold;
+        }
+        .scheduled { 
+            font-weight: bold; 
+            color: #007bff; /* Blue for scheduled items */
+        }
+        .activity-time { 
+            font-family: 'Lucida Console', Monaco, monospace; 
+            color: #495057; 
+            white-space: nowrap; /* Keep time on one line if possible */
+        }
+        a.guidebook-popup-link { /* Apply to links that trigger popups */
+            color: #0056b3; /* Darker blue for links */ 
+            text-decoration: none; 
+            cursor: pointer;
+        }
+        a.guidebook-popup-link:hover { 
+            text-decoration: underline; 
+        }
+        .reserved-meal-cell {
+            background-color: #e6e6fa; /* Lavender for cell */
+        }
+        .guidebook-ref-section { 
+            margin-top: 40px; 
+            padding: 20px; 
+            background-color:#f1f3f5; 
+            border-radius:8px;
+            border: 1px solid #ced4da;
+        }
+        .guidebook-ref-section h2 {
+            color: #2c3e50; 
+            border-bottom: 2px solid #4a90e2;
+            padding-bottom: 10px;
+        }
+        .guidebook-ref-section div { /* These are the content sources for popups */
+            margin-bottom: 10px; 
+            padding: 8px; 
+            background-color: #ffffff; 
+            border-left: 4px solid #4a90e2;
+            border-radius: 4px;
+            display: none; /* Hide them by default, JS will read from here */
+        }
+        ul {
+            margin-top: 0;
+            padding-left: 20px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; /* 5% from the top and centered */
+            padding: 25px;
+            border: 1px solid #888;
+            width: 70%; /* Could be more or less, depending on screen size */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            position: relative;
+        }
+        .modal-header {
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        .modal-body {
+            padding-top: 15px;
+            line-height: 1.6;
+            max-height: 60vh; /* Max height for content, then scroll */
+            overflow-y: auto;
+        }
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Japan Trip Summary</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>Date</th>
+                <th>Location(s)</th>
+                <th>Time</th>
+                <th>Activity / Recommendation</th>
+                <th>Details / Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Day 1 -->
+            <tr class="day-header">
+                <td colspan="6">Day 1: Arrival & Settling In</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>May 13 (Tue)</td>
+                <td>Dallas → Tokyo</td>
+                <td class="activity-time">12:25 PM (CDT)</td>
+                <td class="travel scheduled">Depart from Dallas Fort Worth (DFW)</td>
+                <td>AA 175. Seats: 10J, 10L. Baggage: 2x23kg/pax.</td>
+            </tr>
+
+            <!-- Day 2 -->
+            <tr>
+                <td>2</td>
+                <td>May 14 (Wed)</td>
+                <td>Tokyo (HND) → Shinjuku</td>
+                <td class="activity-time">3:55 PM (JST)</td>
+                <td class="travel scheduled">Arrive at Haneda Airport (HND)</td>
+                <td>Met by Kyotabi Tour Japan driver.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Shinjuku</td>
+                <td class="activity-time">~5:00 PM - 5:30 PM</td>
+                <td class="travel scheduled">Transfer to hotel & Check-in</td>
+                <td>Kimpton Shinjuku Tokyo. Room still yours during Hakone trip.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Shinjuku</td>
+                <td class="activity-time">Evening</td>
+                <td class="dinner">Dinner near hotel</td>
+                <td>Try <a href="#udon-shin-guide" class="guidebook-popup-link">Udon Shin</a> (10 min walk, tempura/udon, try for walk-in). Alt: <a href="#onigiri-manma-guide" class="guidebook-popup-link">Onigiri Manma</a> (20 min walk).</td>
+            </tr>
+
+            <!-- Day 3 -->
+            <tr class="day-header">
+                <td colspan="6">Day 3: Tokyo Exploration - Towers and Tradition</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>May 15 (Thu)</td>
+                <td>Tokyo (Shinjuku, Asakusa, Minato)</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast</td>
+                <td>At hotel (Kimpton Shinjuku).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Shinjuku, Asakusa</td>
+                <td class="activity-time scheduled">10:00 AM - 4:00 PM</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#guided-tour-tokyo-tower-asakusa-details" class="guidebook-popup-link">Guided Tour: Tokyo Tower & Asakusa</a></span></td>
+                <td>Kyotabi Tour (6 hrs, English guide, public transport). Meet in hotel lobby.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Asakusa Area</td>
+                <td class="activity-time">~1:00 PM</td>
+                <td class="lunch">Lunch during tour</td>
+                <td>In Asakusa area (guide will advise).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Minato (Tokyo Tower)</td>
+                <td class="activity-time scheduled">5:00 PM (Arrive by)</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#tokyo-tower-visit-details" class="guidebook-popup-link">Tokyo Tower Visit</a></span></td>
+                <td>Tickets for 5:15 PM entry (Main Deck & Top Deck Gate). <span class="note">Note: Tight timing if tour ends at 4 PM far from tower.</span></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Shinjuku</td>
+                <td class="activity-time">Evening</td>
+                <td class="dinner">Dinner near hotel</td>
+                <td>Whichever wasn't chosen yesterday: <a href="#udon-shin-guide" class="guidebook-popup-link">Udon Shin</a> or <a href="#onigiri-manma-guide" class="guidebook-popup-link">Onigiri Manma</a>.</td>
+            </tr>
+
+            <!-- Day 4 -->
+            <tr class="day-header">
+                <td colspan="6">Day 4: Journey to Hakone - Mt. Fuji Views</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>May 16 (Fri)</td>
+                <td>Tokyo → Hakone</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast & Hotel Prep</td>
+                <td>At Kimpton Shinjuku. Leave larger suitcases at hotel. Organize taxi to Tokyo Station via concierge.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Shinjuku → Tokyo Station</td>
+                <td class="activity-time">~7:30 AM</td>
+                <td class="travel scheduled">Taxi to Tokyo Station</td>
+                <td>~25 min ride. Arrive station by 7:57 AM.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Tokyo Station → Mishima</td>
+                <td class="activity-time scheduled">8:27 AM - 9:20 AM</td>
+                <td class="travel scheduled">Train to Mishima</td>
+                <td>JR KODAMA 709. Car 13, Seats 18D/E.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Hakone Area (from Mishima)</td>
+                <td class="activity-time scheduled">9:20 AM - ~5:20 PM</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#private-tour-hakone-details" class="guidebook-popup-link">Private Tour: Hakone (Full Day)</a></span></td>
+                <td>Kyotabi Tour (8 hrs, private car). Includes: Lake Motosu, Shiraito Falls, Iyashino Sato, Lake Saiko, Narusawa Caves, Aokigahara, Chureito Pagoda. Guide meets at Mishima station.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Hakone Area</td>
+                <td class="activity-time">During Tour</td>
+                <td class="lunch">Lunch during Hakone tour</td>
+                <td>Location TBD with guide.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Hakone (Gora)</td>
+                <td class="activity-time">Evening</td>
+                <td class="travel scheduled">Check-in Gora Kadan</td>
+                <td>Tour ends at hotel. Check-in after 3:00 PM.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Hakone (Gora Kadan)</td>
+                <td class="activity-time scheduled">Evening</td>
+                <td class="dinner scheduled reserved-meal-cell">Dinner at <span class="reserved-restaurant-name">Gora Kadan</span></td>
+                <td>Half board included.</td>
+            </tr>
+
+            <!-- Day 5 -->
+            <tr class="day-header">
+                <td colspan="6">Day 5: Hakone Return & Tokyo's Modern Beat</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>May 17 (Sat)</td>
+                <td>Hakone → Tokyo (Shinjuku, Bunkyo)</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast & Check-out</td>
+                <td>At Gora Kadan. Check-out by 11:00 AM. Organize taxi to Odawara Station.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Gora → Odawara Station</td>
+                <td class="activity-time">~10:45 AM</td>
+                <td class="travel scheduled">Taxi to Odawara Station</td>
+                <td>~25 min ride. Arrive station by 11:14 AM.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Odawara Station → Tokyo Station</td>
+                <td class="activity-time scheduled">11:44 AM - 12:18 PM</td>
+                <td class="travel scheduled">Train to Tokyo Station</td>
+                <td>JR KODAMA 710. Car 12, Seats 1D/E.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Tokyo Station</td>
+                <td class="activity-time">~12:30 PM</td>
+                <td class="lunch">Lunch at <a href="#rokurinsha-guide" class="guidebook-popup-link scheduled">Rokurinsha</a></td>
+                <td>Famous tsukemen ramen on Ramen Street.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Shinjuku</td>
+                <td class="activity-time">~2:00 PM - 3:45 PM</td>
+                <td class="sightseeing">Explore Shinjuku</td>
+                <td>Suggestions: <a href="#shinjuku-gyoen-guide" class="guidebook-popup-link">Shinjuku Gyoen Park</a>, <a href="#tokyu-hands-guide" class="guidebook-popup-link">Tokyu Hands</a>, or <a href="#isetan-shinjuku-guide" class="guidebook-popup-link">Isetan Shinjuku</a>.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Shinjuku</td>
+                <td class="activity-time scheduled">4:00 PM - 5:30 PM</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#yayoi-kusama-museum-details" class="guidebook-popup-link">Yayoi Kusama Museum</a></span></td>
+                <td>Timed entry (90 min). Be punctual.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Shinjuku → Bunkyo City</td>
+                <td class="activity-time">~5:30 PM - 5:55 PM</td>
+                <td class="travel scheduled">Travel to Dinner</td>
+                <td><span class="note">Tight! 5 min taxi recommended (or 20 min public transport).</span></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Bunkyo City</td>
+                <td class="activity-time scheduled">6:00 PM</td>
+                <td class="dinner scheduled reserved-meal-cell">Dinner at <a href="#unagi-hashimoto-guide" class="guidebook-popup-link"><span class="reserved-restaurant-name">Unagi Hashimoto</span></a></td>
+                <td>Eel specialty. Reconfirm reservation.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Shibuya</td>
+                <td class="activity-time">After Dinner (Optional)</td>
+                <td class="sightseeing">Quick Shibuya Visit</td>
+                <td>If energy permits & stores open: <a href="#shibuya-crossing-guide" class="guidebook-popup-link">Shibuya Crossing</a>, Hachiko Statue, <a href="#mugiwara-store-guide" class="guidebook-popup-link">Mugiwara Store</a> (One Piece).</td>
+            </tr>
+
+            <!-- Day 6 -->
+            <tr class="day-header">
+                <td colspan="6">Day 6: Tokyo Contrasts - Harajuku Pop & Ginza Chic</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>May 18 (Sun)</td>
+                <td>Tokyo (Harajuku, Ginza)</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast</td>
+                <td>At hotel.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Harajuku</td>
+                <td class="activity-time">Morning - Early Afternoon</td>
+                <td class="sightseeing">Explore Harajuku</td>
+                <td>Sunday: <a href="#yoyogi-park-guide" class="guidebook-popup-link">Yoyogi Park (Meiji Shrine)</a> for potential weddings/cosplay on bridge. <a href="#takeshita-street-guide" class="guidebook-popup-link">Takeshita Street</a>.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Harajuku</td>
+                <td class="activity-time">Lunchtime</td>
+                <td class="lunch scheduled">Lunch at Kura Sushi</td>
+                <td>Popular conveyor belt sushi. (User request).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Harajuku</td>
+                <td class="activity-time">Afternoon</td>
+                <td class="sightseeing">Continue Harajuku Exploration</td>
+                <td><a href="#omotesando-guide" class="guidebook-popup-link">Omotesando</a>, <a href="#kiddyland-guide" class="guidebook-popup-link">Kiddyland</a>, <a href="#tokyu-plaza-harajuku-guide" class="guidebook-popup-link">Tokyu Plaza</a>, <a href="#ota-museum-guide" class="guidebook-popup-link">Ota Memorial Museum</a> (check opening). Fun Cafes: <a href="#reissue-cafe-guide" class="guidebook-popup-link">Reissue</a>, <a href="#anakuma-cafe-guide" class="guidebook-popup-link">ANAKUMA CAFE</a>.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Harajuku → Ginza</td>
+                <td class="activity-time">Mid-Afternoon</td>
+                <td class="travel">Travel to Ginza</td>
+                <td>~30 min by subway.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Ginza</td>
+                <td class="activity-time">Late Afternoon</td>
+                <td class="sightseeing">Explore Ginza</td>
+                <td><a href="#ginza-depachika-guide" class="guidebook-popup-link">Department store food basements (depachika)</a>, <a href="#tsutaya-books-ginza-guide" class="guidebook-popup-link">Tsutaya Books</a>, <a href="#leica-store-ginza-guide" class="guidebook-popup-link">Leica Store</a>. Consider <a href="#ginza-lion-beer-hall-guide" class="guidebook-popup-link">Ginza Lion Beer Hall</a>.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Ginza</td>
+                <td class="activity-time scheduled">8:00 PM</td>
+                <td class="dinner scheduled reserved-meal-cell">Dinner at <a href="#ginza-sushi-ko-honten-guide" class="guidebook-popup-link"><span class="reserved-restaurant-name">Ginza Sushi Ko Honten</span></a></td>
+                <td>Historic sushi restaurant. Reconfirm reservation.</td>
+            </tr>
+            
+            <!-- Day 7 -->
+            <tr class="day-header">
+                <td colspan="6">Day 7: Tokyo Tech & Heights - Akihabara, Daiso, Skytree</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>May 19 (Mon)</td>
+                <td>Tokyo (Akihabara, Funabashi, Sumida)</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast</td>
+                <td>At hotel.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Akihabara</td>
+                <td class="activity-time">Morning</td>
+                <td class="sightseeing">Explore <a href="#akihabara-guide" class="guidebook-popup-link">Akihabara</a></td>
+                <td>Electronics, anime/manga, <a href="#kanda-myojin-shrine-guide" class="guidebook-popup-link">Kanda Myojin Shrine</a>, Gacha-Gacha machines.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Akihabara Area</td>
+                <td class="activity-time">~1:00 PM</td>
+                <td class="lunch">Lunch in Akihabara</td>
+                <td>Recommendation: <a href="#kikanbo-ramen-guide" class="guidebook-popup-link">Kikanbo Ramen</a> (spicy ramen).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Akihabara → Funabashi</td>
+                <td class="activity-time">~2:00 PM</td>
+                <td class="travel">Travel to Funabashi</td>
+                <td>~40-50 min by train.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Funabashi</td>
+                <td class="activity-time">Afternoon</td>
+                <td class="sightseeing">Visit <a href="#daiso-giga-funabashi-guide" class="guidebook-popup-link">Daiso Giga Funabashi</a></td>
+                <td>6-story Daiso store. <span class="note">Note: Significant travel time for this day.</span></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Funabashi → Skytree (Oshiage)</td>
+                <td class="activity-time">~4:00 PM</td>
+                <td class="travel">Travel to Skytree Area</td>
+                <td>~40-50 min by train. Explore Solamachi mall if time before Skytree.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Sumida (Tokyo Skytree)</td>
+                <td class="activity-time scheduled">6:30 PM</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#tokyo-skytree-visit-details" class="guidebook-popup-link">Tokyo Skytree Visit</a></span></td>
+                <td>Access to Tembo Deck & Tembo Galleria.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Skytree → Yotsuya</td>
+                <td class="activity-time">~7:55 PM</td>
+                <td class="travel scheduled">Travel to Dinner</td>
+                <td>~35 min public transport or 25 min taxi.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Yotsuya</td>
+                <td class="activity-time scheduled">8:30 PM</td>
+                <td class="dinner scheduled reserved-meal-cell">Dinner at <a href="#shabusen-guide" class="guidebook-popup-link"><span class="reserved-restaurant-name">Shabusen</span></a></td>
+                <td>Shabu-shabu. Reconfirm reservation.</td>
+            </tr>
+
+            <!-- Day 8 -->
+            <tr class="day-header">
+                <td colspan="6">Day 8: Tokyo Markets & Might - Tsukiji and Sumo</td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>May 20 (Tue)</td>
+                <td>Tokyo (Tsukiji, Ryogoku, Roppongi)</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast</td>
+                <td>At hotel.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Tsukiji</td>
+                <td class="activity-time scheduled">9:00 AM - 12:00 PM</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#guided-tour-tsukiji-details" class="guidebook-popup-link">Guided Tour: Tsukiji Fish Market</a></span></td>
+                <td>Kyotabi Tour (3 hrs, public transport).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Tsukiji Outer Market</td>
+                <td class="activity-time">~12:15 PM</td>
+                <td class="lunch">Lunch at Tsukiji Outer Market</td>
+                <td>Explore fresh seafood stalls and restaurants.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Tsukiji → Ryogoku</td>
+                <td class="activity-time">~1:30 PM</td>
+                <td class="travel">Travel to Ryogoku</td>
+                <td>~20-25 min by subway.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Ryogoku</td>
+                <td class="activity-time scheduled">2:15 PM (Arrive by)</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#sumo-tournament-details" class="guidebook-popup-link">Sumo Tournament</a></span></td>
+                <td>Tickets for 2:30 PM. Meet guide at Ryogoku Station (West Gate). Ends ~6:00 PM.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Ryogoku → Roppongi</td>
+                <td class="activity-time">~6:30 PM - 7:15 PM</td>
+                <td class="travel">Travel to Roppongi</td>
+                <td>~30-40 min. Optional: <a href="#roppongi-hills-guide" class="guidebook-popup-link">Roppongi Hills/Mori Tower</a> if time before dinner.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Roppongi (Nishiazabu)</td>
+                <td class="activity-time scheduled">8:00 PM</td>
+                <td class="dinner scheduled reserved-meal-cell">Dinner at <a href="#butagumi-guide" class="guidebook-popup-link"><span class="reserved-restaurant-name">Butagumi</span></a></td>
+                <td>Tonkatsu specialty. Reconfirm reservation.</td>
+            </tr>
+
+            <!-- Day 9 -->
+            <tr class="day-header">
+                <td colspan="6">Day 9: Animation & Art - Ghibli and Museums</td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>May 21 (Wed)</td>
+                <td>Tokyo (Shinjuku, Mitaka, Koganei)</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast</td>
+                <td>At hotel.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Shinjuku (Keio Plaza Hotel)</td>
+                <td class="activity-time scheduled">10:15 AM (Arrive by)</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#ghibli-bus-tour-details" class="guidebook-popup-link">Ghibli Museum & Film Appreciation Bus Tour</a></span></td>
+                <td>Meet at JTB Sunrise Tours Sales Office.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Mitaka, Meguro, Koganei</td>
+                <td class="activity-time scheduled">10:30 AM - ~5:30 PM</td>
+                <td class="sightseeing scheduled reserved-meal-cell">Tour Activities</td> <!-- Marked cell because lunch is part of it -->
+                <td>Includes: Ghibli Museum (2.5hr), <span class="lunch scheduled"><span class="reserved-restaurant-name">Lunch at Hotel Gajoen Tokyo</span></span>, Edo-Tokyo Open Air Architectural Museum.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Shinjuku / Nakano</td>
+                <td class="activity-time">Evening</td>
+                <td class="dinner">Dinner (No Reservation)</td>
+                <td>Plan A: <a href="#maguro-mart-guide" class="guidebook-popup-link">Maguro Mart</a> (Nakano, tuna izakaya, near Nakano Broadway). Plan B: <a href="#isetan-shinjuku-guide" class="guidebook-popup-link">Isetan Shinjuku</a> (depachika).</td>
+            </tr>
+
+            <!-- Day 10 -->
+            <tr class="day-header">
+                <td colspan="6">Day 10: Onwards to Nagoya - Castles and Industry</td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td>May 22 (Thu)</td>
+                <td>Tokyo → Nagoya</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast & Hotel Prep</td>
+                <td>At Kimpton Shinjuku. Travel to Tokyo Station.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Tokyo Station → Nagoya Station</td>
+                <td class="activity-time scheduled">9:09 AM - 10:45 AM</td>
+                <td class="travel scheduled">Train to Nagoya</td>
+                <td>JR NOZOMI 225. Car 5, Seats 18D/E. Arrive station by 8:39 AM.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Nagoya</td>
+                <td class="activity-time">~11:00 AM</td>
+                <td class="travel">Arrive & Luggage Drop</td>
+                <td>Go to Mercure Nagoya Cypress, leave luggage.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Nagoya</td>
+                <td class="activity-time">Lunchtime</td>
+                <td class="lunch">Lunch in Nagoya</td>
+                <td>Suggestions: Near Nagoya Station or <a href="#osu-shopping-street-guide" class="guidebook-popup-link">Osu Shopping Street</a> (street food).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Nagoya</td>
+                <td class="activity-time">Afternoon</td>
+                <td class="sightseeing">Explore Nagoya</td>
+                <td>Suggestions: <a href="#toyota-museum-nagoya-guide" class="guidebook-popup-link">Toyota Commemorative Museum</a> (5 min taxi from hotel) or <a href="#nagoya-castle-guide" class="guidebook-popup-link">Nagoya Castle</a>.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Nagoya</td>
+                <td class="activity-time scheduled">From 3:00 PM</td>
+                <td class="travel scheduled">Hotel Check-in</td>
+                <td>Mercure Nagoya Cypress. <span class="reserved-activity-name"><a href="#ghibli-park-package-details" class="guidebook-popup-link">Collect Ghibli Park tickets</a></span>.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Nagoya</td>
+                <td class="activity-time">Evening</td>
+                <td class="sightseeing dinner">Evening Exploration & Dinner</td>
+                <td>Explore <a href="#sakae-nagoya-guide" class="guidebook-popup-link">Sakae district</a> (Oasis 21, TV Tower) and find dinner there.</td>
+            </tr>
+
+            <!-- Day 11 -->
+            <tr class="day-header">
+                <td colspan="6">Day 11: Ghibli Park Magic & Journey to Kyoto</td>
+            </tr>
+            <tr>
+                <td>11</td>
+                <td>May 23 (Fri)</td>
+                <td>Nagoya → Ghibli Park → Kyoto</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast & Transfer</td>
+                <td>At Mercure Nagoya. Kyotabi transfer to Ghibli Park (confirm time).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Ghibli Park</td>
+                <td class="activity-time scheduled">10:00 AM - 11:00 AM (Entry)</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#ghibli-park-visit-details" class="guidebook-popup-link">Ghibli Park Visit</a></span></td>
+                <td>Ghibli's Grand Warehouse timed entry. Premium Pass for all 5 areas. Bring passports.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Ghibli Park</td>
+                <td class="activity-time">Lunchtime</td>
+                <td class="lunch">Lunch at Ghibli Park</td>
+                <td>Explore food options within the park.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Ghibli Park → Nagoya Hotel → Kyoto</td>
+                <td class="activity-time">Afternoon - Evening</td>
+                <td class="travel scheduled">Travel to Kyoto</td>
+                <td>Kyotabi transfer back to Nagoya hotel. Collect luggage. Train Nagoya → Kyoto (~35 min, buy tickets at station). Travel to Sora Niwa Terrace Kyoto Bettei & Check-in.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Kyoto</td>
+                <td class="activity-time scheduled">8:30 PM</td>
+                <td class="dinner scheduled reserved-meal-cell">Dinner at <a href="#kyoto-yakiniku-hiro-kiyamachi-guide" class="guidebook-popup-link"><span class="reserved-restaurant-name">Kyoto Yakiniku HIRO Kiyamachi</span></a></td>
+                <td>Reconfirm. <span class="note">Note: Very tight schedule from Ghibli Park to Kyoto dinner. Plan transfers carefully.</span> Dinner is ~15-20 min taxi from hotel.</td>
+            </tr>
+
+            <!-- Day 12 -->
+            <tr class="day-header">
+                <td colspan="6">Day 12: Kyoto's Scenic Wonders - Arashiyama & Philosopher's Path</td>
+            </tr>
+            <tr>
+                <td>12</td>
+                <td>May 24 (Sat)</td>
+                <td>Kyoto (Arashiyama)</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast</td>
+                <td>At hotel (Sora Niwa Terrace).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Arashiyama</td>
+                <td class="activity-time scheduled">10:00 AM - 4:00 PM</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#guided-tour-arashiyama-details" class="guidebook-popup-link">Guided Tour: Arashiyama & Philosopher's Path</a></span></td>
+                <td>Kyotabi Tour (6 hrs, public transport). Incl. <a href="#arashiyama-bamboo-grove-guide" class="guidebook-popup-link">Bamboo Grove</a>, <a href="#tenryu-ji-temple-guide" class="guidebook-popup-link">Tenryu-ji Temple</a>.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Arashiyama</td>
+                <td class="activity-time">Lunchtime</td>
+                <td class="lunch">Lunch in Arashiyama</td>
+                <td>Guidebook suggestions: <a href="#shoraian-arashiyama-guide" class="guidebook-popup-link">Shoraian</a> (tofu kaiseki), <a href="#shigetsu-arashiyama-guide" class="guidebook-popup-link">Shigetsu</a> (Zen Buddhist food). Guide will advise.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Kyoto (Near Hotel)</td>
+                <td class="activity-time scheduled">6:30 PM</td>
+                <td class="dinner scheduled reserved-meal-cell">Dinner at <a href="#sen-kyoto-guide" class="guidebook-popup-link"><span class="reserved-restaurant-name">Sen</span></a></td>
+                <td>Kaiseki (Michelin*). 15 min walk from hotel. Reconfirm. Credit card guarantee.</td>
+            </tr>
+
+            <!-- Day 13 -->
+            <tr class="day-header">
+                <td colspan="6">Day 13: Kyoto's Heritage - Temples, Geishas, and Gaming</td>
+            </tr>
+            <tr>
+                <td>13</td>
+                <td>May 25 (Sun)</td>
+                <td>Kyoto (Higashiyama, Gion, Uji)</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast</td>
+                <td>At hotel.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Kiyomizu-dera, Gion</td>
+                <td class="activity-time scheduled">9:00 AM - 3:00 PM</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#guided-tour-kiyomizu-gion-details" class="guidebook-popup-link">Guided Tour: Kiyomizu-dera & Gion</a></span></td>
+                <td>Kyotabi Tour (6 hrs, public transport). Explore <a href="#kiyomizu-dera-guide" class="guidebook-popup-link">Kiyomizu-dera Temple</a> and <a href="#gion-guide" class="guidebook-popup-link">Gion district</a>.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Kiyomizu-dera / Gion</td>
+                <td class="activity-time">Lunchtime</td>
+                <td class="lunch">Lunch during tour</td>
+                <td>Guidebook suggestions: Near Kiyomizu-dera or in Gion (e.g. <a href="#wabiya-korekido-gion-guide" class="guidebook-popup-link">Wabiya Korekido</a> for Oyakodon).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Uji (Nintendo Museum)</td>
+                <td class="activity-time scheduled">3:00 PM - 3:30 PM</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#nintendo-museum-details" class="guidebook-popup-link">Nintendo Museum Visit</a></span></td>
+                <td>Access window. <span class="note">CRITICAL: Tour ends 3 PM. Travel Gion to Uji (~45-60 min). This timing is impossible as scheduled. Clarify with tour operator or adjust plans.</span> "More details soon".</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Kyoto (Gion)</td>
+                <td class="activity-time scheduled">8:30 PM</td>
+                <td class="dinner scheduled reserved-meal-cell">Dinner at <a href="#kobe-beef-mouriya-gion-guide" class="guidebook-popup-link"><span class="reserved-restaurant-name">Kobe Beef steak Mouriya Gion</span></a></td>
+                <td>Reconfirm reservation.</td>
+            </tr>
+
+            <!-- Day 14 -->
+            <tr class="day-header">
+                <td colspan="6">Day 14: Day Trip to Hiroshima & Miyajima</td>
+            </tr>
+            <tr>
+                <td>14</td>
+                <td>May 26 (Mon)</td>
+                <td>Kyoto → Hiroshima & Miyajima → Kyoto</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast</td>
+                <td>At hotel.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Hiroshima & Miyajima</td>
+                <td class="activity-time scheduled">9:00 AM - ~5:00 PM</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#guided-tour-hiroshima-miyajima-details" class="guidebook-popup-link">Guided Tour: Hiroshima & Miyajima</a></span></td>
+                <td>Kyotabi Tour (8 hrs, public transport). Visit Peace Memorial Park/Museum, Itsukushima Shrine.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Hiroshima / Miyajima</td>
+                <td class="activity-time">Lunchtime</td>
+                <td class="lunch">Lunch during tour</td>
+                <td>Location TBD with guide (e.g., Okonomimura in Hiroshima or options on Miyajima).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Kyoto (Pontocho)</td>
+                <td class="activity-time">Evening</td>
+                <td class="dinner">Dinner at <a href="#pontocho-alley-guide" class="guidebook-popup-link">Pontocho Alley</a></td>
+                <td>Pedestrian alley with many restaurants. <a href="#pontocho-masuda-guide" class="guidebook-popup-link">Pontocho Masuda</a> (Bib Gourmand) recommended. Less than 10 min walk from hotel.</td>
+            </tr>
+
+            <!-- Day 15 -->
+            <tr class="day-header">
+                <td colspan="6">Day 15: Kyoto Farewell Tea & Osaka Welcome Feast</td>
+            </tr>
+            <tr>
+                <td>15</td>
+                <td>May 27 (Tue)</td>
+                <td>Kyoto → Osaka</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast & Check-out</td>
+                <td>At Sora Niwa Terrace. Check-out 11:00 AM. Manage luggage for tea ceremony (store at hotel or take).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Kyoto (Higashiyama)</td>
+                <td class="activity-time scheduled">10:55 AM (Arrive by)</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#tea-ceremony-kyoto-details" class="guidebook-popup-link">Tea Ceremony Experience</a></span></td>
+                <td>11:00 AM - 11:45 AM. Near Park Hyatt.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Kyoto</td>
+                <td class="activity-time">~12:00 PM</td>
+                <td class="lunch">Lunch in Kyoto</td>
+                <td>Near tea ceremony location (Higashiyama/Gion) or Kyoto Station before train.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Kyoto Station → Osaka</td>
+                <td class="activity-time">Afternoon</td>
+                <td class="travel scheduled">Train to Osaka</td>
+                <td>~30 min. Buy tickets at station. Travel to Zentis Osaka & Check-in (from 3:00 PM).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Osaka</td>
+                <td class="activity-time scheduled">6:00 PM - 9:00 PM</td>
+                <td class="dinner scheduled reserved-meal-cell"><span class="reserved-activity-name"><a href="#food-tour-osaka-details" class="guidebook-popup-link">Food tour in Osaka</a></span></td> <!-- Marked as activity & meal -->
+                <td>Kyotabi Tour (3 hrs, public transport). Meets at hotel lobby. Covers dinner.</td>
+            </tr>
+
+            <!-- Day 16 -->
+            <tr class="day-header">
+                <td colspan="6">Day 16: Osaka Thrills - Universal Studios Japan</td>
+            </tr>
+            <tr>
+                <td>16</td>
+                <td>May 28 (Wed)</td>
+                <td>Osaka (USJ)</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast</td>
+                <td>At hotel (Zentis Osaka, complimentary).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Universal Studios Japan</td>
+                <td class="activity-time scheduled">Full Day</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#usj-details" class="guidebook-popup-link">Universal Studios Japan</a></span></td>
+                <td>1 Day Studio Pass. Utilize Express Passes:
+                    <ul>
+                        <li>Doraemon: 10:10-10:30</li>
+                        <li>Super Nintendo World Entry 1: 11:30-12:30 (Yoshi's Adventure: 11:30-12:00)</li>
+                        <li>Detective Conan: 14:20-14:50</li>
+                        <li>Super Nintendo World Entry 2: 13:40-14:40 (MarioKart: 13:40-14:10)</li>
+                        <li>Harry Potter Area Entry: 15:40-16:40 (Forbidden Journey: 16:00-16:30)</li>
+                        <li>Plus Jaws, Jurassic Park, Hollywood Dream/Flying Dinosaur.</li>
+                    </ul>
+                    <span class="note">Ticket date in original was typo for May 20, 2025; using itinerary date May 28.</span>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>USJ</td>
+                <td class="activity-time">Daytime</td>
+                <td class="lunch">Lunch at USJ</td>
+                <td>Explore options within the park.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>USJ / Osaka</td>
+                <td class="activity-time">Evening</td>
+                <td class="dinner">Dinner</td>
+                <td>At USJ or near hotel after returning.</td>
+            </tr>
+
+            <!-- Day 17 -->
+            <tr class="day-header">
+                <td colspan="6">Day 17: Himeji's Majestic Castle</td>
+            </tr>
+            <tr>
+                <td>17</td>
+                <td>May 29 (Thu)</td>
+                <td>Osaka → Himeji → Osaka</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast</td>
+                <td>At hotel.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Osaka → Himeji</td>
+                <td class="activity-time">Morning</td>
+                <td class="travel">Train to Himeji</td>
+                <td>Suggest Shin-Osaka Stn for faster Nozomi train (~30 min). Arrive early for castle tour.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Himeji</td>
+                <td class="activity-time">Morning - Afternoon</td>
+                <td class="sightseeing">Visit <a href="#himeji-castle-guide" class="guidebook-popup-link">Himeji Castle</a> & <a href="#koko-en-garden-guide" class="guidebook-popup-link">Koko-en Garden</a></td>
+                <td>Consider English tour at castle (e.g., 10 AM or 1 PM, confirm on site). Wear comfy shoes.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Himeji</td>
+                <td class="activity-time">Lunchtime</td>
+                <td class="lunch">Lunch in Himeji</td>
+                <td>Guidebook: <a href="#kushiyaki-kobe-beef-himeji-guide" class="guidebook-popup-link">Kushiyaki Kobe beef</a>, <a href="#totoro-sushi-himeji-guide" class="guidebook-popup-link">Totoro sushi</a>. Snack: <a href="#taiyaki-himeji-guide" class="guidebook-popup-link">Rice Flour Taiyaki</a>.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Himeji</td>
+                <td class="activity-time scheduled">5:00 PM</td>
+                <td class="dinner scheduled reserved-meal-cell">Dinner at <a href="#yakiniku-azumi-himeji-guide" class="guidebook-popup-link"><span class="reserved-restaurant-name">Yakiniku Azumi</span></a> (in Himeji)</td>
+                <td>Himeji beef. Reconfirm. Credit card guarantee.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Himeji → Osaka</td>
+                <td class="activity-time">Evening</td>
+                <td class="travel">Train back to Osaka</td>
+                <td>After dinner.</td>
+            </tr>
+
+            <!-- Day 18 -->
+            <tr class="day-header">
+                <td colspan="6">Day 18: Nara's Deer & Osaka's Digital Garden</td>
+            </tr>
+            <tr>
+                <td>18</td>
+                <td>May 30 (Fri)</td>
+                <td>Osaka → Nara → Osaka</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast</td>
+                <td>At hotel.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Nara</td>
+                <td class="activity-time scheduled">10:00 AM - ~4:00 PM</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#guided-tour-nara-details" class="guidebook-popup-link">Guided Tour: Day trip to Nara</a></span></td>
+                <td>Kyotabi Tour (6 hrs, public transport). Visit Nara Park (deer), Todai-ji Temple.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Nara</td>
+                <td class="activity-time">Lunchtime</td>
+                <td class="lunch">Lunch during Nara tour</td>
+                <td>Location TBD with guide.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Osaka (Kita)</td>
+                <td class="activity-time scheduled">6:00 PM (Requested)</td>
+                <td class="dinner scheduled reserved-meal-cell">Dinner at <a href="#epais-osaka-guide" class="guidebook-popup-link"><span class="reserved-restaurant-name">Epais</span></a></td>
+                <td>Tonkatsu. (Awaiting confirmation). If not confirmed, try <a href="#yakitori-ichimatsu-osaka-guide" class="guidebook-popup-link">Yakitori Ichimatsu</a> or <a href="#kushikatsu-bon-osaka-guide" class="guidebook-popup-link">Kushikatsu Bon</a> near hotel.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Osaka (Nagai Park)</td>
+                <td class="activity-time scheduled">7:30 PM - 8:30 PM</td>
+                <td class="sightseeing scheduled"><span class="reserved-activity-name"><a href="#teamlab-botanical-osaka-details" class="guidebook-popup-link">teamLab Botanical Garden Osaka</a></span></td>
+                <td>Entry window. <span class="note">Note: Ensure quick dinner if Epais at 6 PM is confirmed, to allow travel time (~30-40 min) to teamLab.</span></td>
+            </tr>
+
+            <!-- Day 19 -->
+            <tr class="day-header">
+                <td colspan="6">Day 19: Departure - Sayonara Japan</td>
+            </tr>
+            <tr>
+                <td>19</td>
+                <td>May 31 (Sat)</td>
+                <td>Osaka → USA</td>
+                <td class="activity-time">AM</td>
+                <td>Breakfast</td>
+                <td>At hotel.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Osaka (Umeda/Kita)</td>
+                <td class="activity-time">Morning</td>
+                <td class="sightseeing">Free Time / Last Minute Shopping</td>
+                <td>Explore Umeda area (e.g., <a href="#umeda-sky-building-guide" class="guidebook-popup-link">Umeda Sky Building</a>, <a href="#tenjimbashi-suji-guide" class="guidebook-popup-link">Tenjimbashi-suji Shopping Street</a>).</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Osaka</td>
+                <td class="activity-time scheduled">By 12:00 PM</td>
+                <td class="travel scheduled">Check-out Zentis Osaka</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Osaka (Umeda/Kita)</td>
+                <td class="activity-time">Lunchtime</td>
+                <td class="lunch">Lunch in Umeda area</td>
+                <td>Before heading to airport.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>Osaka (ITM)</td>
+                <td class="activity-time scheduled">TBC</td>
+                <td class="travel scheduled">Private transfer to Osaka Int'l Airport (ITM)</td>
+                <td>Kyotabi Tour. Reconfirm time with Raphael.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>ITM → NRT → USA</td>
+                <td class="activity-time scheduled">2:35 PM (JST)</td>
+                <td class="travel scheduled">Depart ITM</td>
+                <td>Flight to Narita (NRT), then connecting flight to USA. Arrive USA 4:10 PM (CST).</td>
+            </tr>
+
+        </tbody>
+    </table>
+
+    <!-- The Modal -->
+    <div id="guidebookModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-button">&times;</span>
+                <h3 id="modalTitle"></h3>
+            </div>
+            <div class="modal-body">
+                <p id="modalText"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="guidebook-ref-section">
+        <h2>Guidebook References (Content for Pop-ups)</h2>
+        <div id="udon-shin-guide"><strong>Udon Shin (Shinjuku/Yoyogi, Tokyo)</strong> - Specializes in tempura and udon (a type of thicker noodle). About a 10-minute walk from Kimpton Shinjuku hotel. It's small and often has lines, reservation recommended if possible. Guidebook notes it's tiny but worth it. Address: Japan, 〒151-0053 Tokyo, Shibuya, Yoyogi, 2 Chome−20−16 相馬ビル １F.</div>
+        <div id="onigiri-manma-guide"><strong>Onigiri Manma (Shinjuku, Tokyo)</strong> - The idea here is to assemble your own Onigiri. Very simple and well-priced. About a 20-minute walk from Kimpton Shinjuku hotel. Address: Japan, 〒160-0022 Tokyo, Shinjuku City, Shinjuku, 3 Chome−14−23 マヤビル 1F.</div>
+        <div id="rokurinsha-guide"><strong>Rokurinsha (Tokyo Station)</strong> - Famous ramen shop located on "Ramen Street" in Tokyo Station (Ichibangai B1). Usually has lines. Specialty is tsukemen, where the noodles and broth are served separately for dipping. Address: Japan, 〒100-0005 Tokyo, Chiyoda City, Marunouchi, 1 Chome−9−1 東京駅一番街 B1 東京ラーメンストリート内.</div>
+        <div id="shinjuku-gyoen-guide"><strong>Shinjuku Gyoen Park (Shinjuku, Tokyo)</strong> - An oasis of tranquility in the frenetic Shinjuku neighborhood. An entrance fee is required. Typically closes on Mondays (unless it's a holiday, then it closes the next business day).</div>
+        <div id="tokyu-hands-guide"><strong>Tokyu Hands (Shinjuku, Tokyo)</strong> - Famous store with 7 floors offering a wide variety of goods, especially interesting for stationery and unique design products. Located in the Takashimaya Times Square South Building. Address: Japan, 〒151-8580 Tōkyō-to, Shibuya-ku, Sendagaya, 5 Chome−24−２ タカシマヤタイムズスクエア南館 2～8F.</div>
+        <div id="isetan-shinjuku-guide"><strong>Isetan Shinjuku (Department Store, Tokyo)</strong> - A must-visit for its "depachika" (gastronomic basement food hall). Features both local delicacies and international patisseries like Pierre Hermé. Options include buying a bento box to eat on the terrace or dining at in-store restaurants. Address: 3-chōme-14-1 Shinjuku, Shinjuku City, Tokyo 160-0022, Japan.</div>
+        <div id="unagi-hashimoto-guide"><strong>Unagi Hashimoto (Bunkyo City, Tokyo)</strong> - A restaurant specializing in eel (unagi), run by the same family since 1835. Located about a 15-minute taxi or 30-minute subway ride from Kimpton Shinjuku. Reservation is important. Address: 2 Chome-5-7 Suido, Bunkyo City, Tokyo 112-0005, Japan.</div>
+        <div id="shibuya-crossing-guide"><strong>Shibuya Crossing (Shibuya, Tokyo)</strong> - The iconic multi-directional pedestrian crossing in front of Shibuya Station, famous for the sheer volume of people crossing simultaneously. For a good view, visit the Starbucks on the second floor overlooking the intersection.</div>
+        <div id="mugiwara-store-guide"><strong>Mugiwara Store (Shibuya, Tokyo)</strong> - The official merchandise store for the popular anime and manga series "One Piece." A must-visit for fans, offering a wide range of exclusive goods. (User-added item).</div>
+        <div id="yoyogi-park-guide"><strong>Yoyogi Park (Harajuku, Tokyo)</strong> - Home to the beautiful Meiji Shrine. On weekends, there's a chance to see traditional Shinto wedding processions. The bridge near Harajuku Station leading to the park is also a popular spot for cosplayers on Sundays.</div>
+        <div id="takeshita-street-guide"><strong>Takeshita Street (Harajuku, Tokyo)</strong> - A bustling pedestrian street popular with young Japanese people, known for unique fashion boutiques, themed cafes, and street food like colorful cotton candy and giant crepes. Can be very crowded and touristy. Nearby Brahms Path offers a quieter alternative.</div>
+        <div id="omotesando-guide"><strong>Omotesando (Harajuku, Tokyo)</strong> - Known as Tokyo's most stylish street, often compared to the Champs-Élysées. Features flagship stores of major international fashion brands like Chanel and Issey Miyake, as well as many other unique shops and cafes.</div>
+        <div id="kiddyland-guide"><strong>Kiddyland (Harajuku, Tokyo)</strong> - A huge toy store with multiple floors, offering a vast selection of characters, elaborate toys, and merchandise that appeals to both children and adults. Address: 6 Chome-1-９ Jingūmae, Shibuya-ku, Tōkyō-to 150-0001, Japan. (Toy Sapiens is another similar store mentioned).</div>
+        <div id="tokyu-plaza-harajuku-guide"><strong>Tokyu Plaza Omotesando Harajuku (Harajuku, Tokyo)</strong> - A department store known for its unique mirrored escalator entrance and a pleasant rooftop terrace (Omohara Forest) offering views of the neighborhood. A great spot for a break. Address: 4-chōme-30-3 Jingūmae, Shibuya City, Tōkyō-to 150-0001, Japan.</div>
+        <div id="ota-museum-guide"><strong>Ota Memorial Museum of Art (Harajuku, Tokyo)</strong> - A museum specializing in Ukiyo-e (Japanese woodblock prints). Visitors remove their shoes to walk on tatami floors. Exhibitions change regularly; check schedule as it may close on Mondays and for exhibition changes. Address: 1 Chome-10-１０ Jingumae, Shibuya, Tokyo 150-0001, Japan.</div>
+        <div id="reissue-cafe-guide"><strong>Reissue Cafe (Harajuku, Tokyo)</strong> - A fun cafe where your cappuccino foam comes decorated in 3D latte art, often featuring cute characters. Address: 3 Chome-25-7 Jingumae, Shibuya, Tokyo 150-0001, Japan.</div>
+        <div id="anakuma-cafe-guide"><strong>ANAKUMA CAFE (Harajuku, Tokyo)</strong> - A unique take-out coffee stand where your coffee cup is delivered through a small opening by a bear's paw. Address: 1 Chome-23-28 Jingumae, Shibuya, Tokyo 150-0001, Japan.</div>
+        <div id="ginza-depachika-guide"><strong>Ginza Department Store Food Basements (Depachika)</strong> - The basement levels of Ginza's department stores ("depato") are dedicated to food. Expect beautifully presented (and often expensive) sweets, savory items, bento boxes, and plenty of samples. A visual and culinary experience.</div>
+        <div id="tsutaya-books-ginza-guide"><strong>Tsutaya Books (Ginza Six, Tokyo)</strong> - Considered one of the best art bookstores in the world, located within the Ginza Six shopping complex. Features an extensive collection of art books, magazines, and a sophisticated atmosphere. Address: Japan, 〒104-0061 Tokyo, Chuo City, Ginza, 6 Chome−10−1 ＳＩＸ６階.</div>
+        <div id="leica-store-ginza-guide"><strong>Leica Store (Ginza, Tokyo)</strong> - A destination for photography enthusiasts, featuring Leica cameras and equipment. There is also a gallery on the second floor. Typically closes on Mondays. Address: 6 Chome-4-1 Ginza, Chūō, Tokyo 104-0061, Japan.</div>
+        <div id="ginza-lion-beer-hall-guide"><strong>Ginza Lion Beer Hall (Ginza, Tokyo)</strong> - Tokyo's oldest beer hall, operating since 1934. Offers a somewhat touristy but classic experience with cold beer in a historic setting.</div>
+        <div id="ginza-sushi-ko-honten-guide"><strong>Ginza Sushi Ko Honten (Restaurant, Tokyo)</strong> - One of Tokyo's oldest sushi restaurants, established in 1885, and notably visited by Anthony Bourdain. Reservation is important. Address: 6 Chome-3-8 Ginza, Chuo City, Tokyo 104-0061, Japan.</div>
+        <div id="akihabara-guide"><strong>Akihabara Neighborhood (Tokyo)</strong> - Known as the "Electric Town," Akihabara is the hub for electronics, anime, manga, video games, and otaku culture. Features numerous multi-story electronics stores, arcades (pachinkos), maid cafes, and specialty shops. The main street, Chuo Dori, is often closed to traffic on Sundays, becoming a pedestrian paradise.</div>
+        <div id="kanda-myojin-shrine-guide"><strong>Kanda Myojin Shrine (Akihabara area, Tokyo)</strong> - A Shinto shrine near Akihabara, known for offering blessings for modern gadgets like computers and cell phones, reflecting its proximity to the tech district. You can purchase unique tech-themed protective charms. Accessible by walking or via Ochanomizu station. Address: 2-16-2 Sotokanda, Chiyoda.</div>
+        <div id="kikanbo-ramen-guide"><strong>Kikanbo Ramen (Kanda/near Akihabara, Tokyo)</strong> - A modern ramen house famous for its spicy miso ramen ("Karashibi Miso Ramen"). Customers order from a vending machine and can customize the level of spiciness (kara) and numbness (shibi). Be cautious with high spice levels. Address: 2 Chome-10-9 Kajicho, Chiyoda City, Tokyo 101-0044, Japan.</div>
+        <div id="daiso-giga-funabashi-guide"><strong>Daiso Giga Funabashi (Store, Funabashi, Chiba)</strong> - A very large (6-story) branch of the popular 100-yen shop chain Daiso, offering an extensive range of products. Located less than a 5-minute walk from JR Funabashi Station. Address: Japan, 〒273-0005 Chiba, Funabashi, Honcho, 1 Chome−6−3 ギガ船橋店 ６階.</div>
+        <div id="shabusen-guide"><strong>Shabusen (Yotsuya, Tokyo)</strong> - Specializes in shabu-shabu (Japanese hot pot where thin slices of meat and vegetables are cooked in broth) and sukiyaki. The Yotsuya branch is noted, though there's also one in Ginza. Address for Yotsuya: Japan, 〒160-0004 Tokyo, Shinjuku City, Yotsuya, 3 Chome−8 中央ビル ６F. Reservation for All-You-Can-Eat + Abalone Course (JPY 12,000 per person).</div>
+        <div id="roppongi-hills-guide"><strong>Roppongi Hills & Mori Tower (Roppongi, Tokyo)</strong> - A large urban development complex featuring shops, restaurants, an art museum (Mori Art Museum), an observation deck (Tokyo City View in Mori Tower), offices, and residences. Known for modern architecture and city views.</div>
+        <div id="butagumi-guide"><strong>Butagumi (Nishiazabu/Roppongi, Tokyo)</strong> - A highly regarded restaurant specializing in tonkatsu (breaded and deep-fried pork cutlet). Known for offering various premium pork breeds. Address: 2 Chome-24-9 Nishiazabu, Minato City, Tokyo 106-0031, Japan. Reservation made through Toreta.</div>
+        <div id="ghibli-bus-tour-details"><strong>Ghibli Museum & Film Appreciation Bus Tour Details</strong> - Group tour, in English, by bus to the Ghibli Museum. Includes: tickets for the Ghibli Museum (2h30 visit), lunch (with one non-alcoholic drink) at Hotel Gajoen Tokyo, visit to the Edo-Tokyo Open Air Architectural Museum. Meet at JTB Sunrise Tours Sales Office, Keio Plaza Hotel - Main Tower - 3rd floor. Contact: +81 03 5796 5454. Payment made on your credit card, in yen, at the time of booking.</div>
+        <div id="maguro-mart-guide"><strong>Maguro Mart (Nakano, Tokyo)</strong> - An izakaya (Japanese pub) specializing in tuna (maguro), offering various cuts and preparations, including sushi and sashimi, in an informal atmosphere. Located near Nakano Broadway, a mall known for anime and cosplay items. Address: 5 Chome-50-3 Nakano, Nakano City, Tokyo 164-0001, Japan.</div>
+        
+        <div id="osu-shopping-street-guide"><strong>Osu Shopping Street (Nagoya)</strong> - One of Nagoya's best shopping areas, a vibrant covered arcade mixing Japanese pop culture, vintage shops, electronics stores, and a variety of street food. The nearby Osu Kannon Buddhist temple is also worth a visit.</div>
+        <div id="toyota-museum-nagoya-guide"><strong>Toyota Commemorative Museum of Industry and Technology (Nagoya)</strong> - Located near where the Toyota company originated, this museum details the history of the Toyota Group, from textile machinery to automobiles. An interesting visit for those interested in industrial history and cars. About a 5-minute taxi ride from Mercure Nagoya Cypress.</div>
+        <div id="nagoya-castle-guide"><strong>Nagoya Castle (Nagoya)</strong> - One of Japan's most important castles, originally built in the Edo period and reconstructed after WWII. The site includes beautiful gardens and the Hommaru Palace, which features faithfully reproduced interiors from the samurai era.</div>
+        <div id="sakae-nagoya-guide"><strong>Sakae District (Nagoya)</strong> - Nagoya's premier commercial and entertainment district. Highlights include Oasis 21, a futuristic park-like structure with a distinctive glass roof ("Water Spaceship"), and the Nagoya TV Tower (now Mirai Tower).</div>
+
+        <div id="kyoto-yakiniku-hiro-kiyamachi-guide"><strong>Kyoto Yakiniku (BBQ) HIRO Kiyamachi (Restaurant, Kyoto)</strong> - A Yakiniku (Japanese BBQ) restaurant located in the Kiyamachi area. Address: Japan, 〒605-0802 Kyoto, Higashiyama Ward, Yamatocho, 7−1 祇園モーリヤビル 1F. +81 75 532 4129. Reservation made through Toreta.</div>
+        <div id="arashiyama-bamboo-grove-guide"><strong>Arashiyama Bamboo Grove (Kyoto)</strong> - A famous and picturesque walking path through a towering bamboo forest in the Arashiyama district. Access is often via the north gate of Tenryu-ji Temple. It's a highly anticipated sight but can be very crowded.</div>
+        <div id="tenryu-ji-temple-guide"><strong>Tenryu-ji Temple (Arashiyama, Kyoto)</strong> - The main temple in Arashiyama and a UNESCO World Heritage site. It's renowned for its beautiful Zen garden, which utilizes the "shakkei" (borrowed scenery) technique, incorporating the surrounding mountains into its design. Address: ６８ Sagatenryūji Susukinobabachō, Ukyo Ward, Kyoto.</div>
+        <div id="shoraian-arashiyama-guide"><strong>Shoraian (Restaurant, Arashiyama, Kyoto)</strong> - A kaiseki restaurant in Arashiyama specializing in tofu dishes, leveraging Kyoto's high-quality water. Offers beautiful views and is about a 20-minute walk from the bamboo forest. Address: 〒616-8386 京都府京都市右京区嵯峨亀ノ尾町官有地内.</div>
+        <div id="shigetsu-arashiyama-guide"><strong>Shigetsu (Restaurant, Arashiyama, Kyoto)</strong> - Located within the grounds of Tenryu-ji Temple, Shigetsu serves "shojin-ryori" (traditional Zen Buddhist vegetarian cuisine) in a very traditional atmosphere. Less than a 10-minute walk from the bamboo forest. Address: Japan, 〒616-8385 Kyoto, Ukyo Ward, Sagatenryuji Susukinobabacho, ６８.</div>
+        <div id="sen-kyoto-guide"><strong>Sen (Restaurant, Kyoto)</strong> - A one-Michelin-star Kaiseki restaurant praised for its dishes and Japanese atmosphere reflecting tea house hospitality. About a 15-minute walk from Sora Niwa Terrace Kyoto Bettei. Address: Japan, 〒600-8103 Kyoto, Shimogyo Ward, 柳馬場上ル塩竈町379. +81 75 361 8873. Reservation made through Omakase.in for the Chef's Tasting Course (JPY 33,000 per person). Credit card guarantee.</div>
+        <div id="kiyomizu-dera-guide"><strong>Kiyomizu-dera Temple (Higashiyama, Kyoto)</strong> - Considered Kyoto's most important temple, famous for its large wooden stage built without nails, jutting out from the hillside. It's usually bustling with visitors. The complex includes smaller shrines like Jishu Shrine (for love) and Tainai-Meguri (rebirth experience). Address: 294 Kiyomizu, Higashiyama Ward, Kyoto.</div>
+        <div id="gion-guide"><strong>Gion District (Kyoto)</strong> - Kyoto's famous geisha district, characterized by traditional wooden machiya houses, teahouses (ochaya), and exclusive restaurants. Hanamikoji Dori is a main street for exploring, and Yasaka Shrine is nearby. It's best experienced by strolling its atmospheric streets.</div>
+        <div id="wabiya-korekido-gion-guide"><strong>Wabiya Korekido (Restaurant, Gion, Kyoto)</strong> - Located on a traditional street in Gion, this restaurant serves Oyakodon (a rice bowl dish with chicken and egg). About a 10-minute walk from Sora Niwa Terrace Kyoto Bettei. Address: Japan, 〒605-0074 Kyoto, Higashiyama Ward, Gionmachi Minamigawa, 歌舞練場北側.</div>
+        <div id="kobe-beef-mouriya-gion-guide"><strong>Kobe Beef steak Mouriya Gion (Restaurant, Kyoto)</strong> - One of Kyoto's premier Teppanyaki establishments, specializing in Kobe beef. Reservation is important. Located less than a 10-minute walk from Sora Niwa Terrace Kyoto Bettei. Address: Japan, 〒605-0802 Kyoto, Higashiyama Ward, Yamatocho, ７−1 １階と２階・4階 祇園モーリヤビル. +81 75 532 4129. Reservation made through TableCheck.</div>
+        <div id="pontocho-alley-guide"><strong>Pontocho Alley (Kyoto)</strong> - A narrow, pedestrian-only alley running parallel to the Kamogawa River, famed for its atmospheric restaurants and bars, many with outdoor seating overlooking the river in warmer months. Considered one of Kyoto's most beautiful streets. Less than a 10-minute walk from Sora Niwa Terrace Kyoto Bettei.</div>
+        <div id="pontocho-masuda-guide"><strong>Pontocho Masuda (Restaurant, Pontocho Alley, Kyoto)</strong> - A restaurant located in Pontocho Alley that holds a Bib Gourmand distinction from Michelin, indicating good quality and good value cooking. Address: Japan, 〒604-8016 Kyoto, Nakagyō-ku, Nabeyachō, 下樵木町１９６−１.</div>
+
+        <div id="himeji-castle-guide"><strong>Himeji Castle (Himeji)</strong> - A UNESCO World Heritage site and one of Japan's most spectacular and well-preserved feudal castles, often called "White Heron Castle" due to its elegant white appearance. English guided tours may be available on-site (confirm times).</div>
+        <div id="koko-en-garden-guide"><strong>Koko-en Garden (Himeji)</strong> - A beautiful Japanese garden located next to Himeji Castle, consisting of nine separate walled gardens designed in various Edo Period styles. A combined ticket for the castle and garden is often available and recommended.</div>
+        <div id="kushiyaki-kobe-beef-himeji-guide"><strong>Kushiyaki Kobe beef (Restaurant, Himeji)</strong> - A small, simple eatery with limited counter seating and take-away options, highly praised for its Kobe beef served in various forms, such as skewers or hamburgers. Address: Japan, 〒670-0012 Hyogo, Himeji, Honmachi, 68 にの屋敷 D 2.</div>
+        <div id="totoro-sushi-himeji-guide"><strong>Totoro (Restaurant, Himeji)</strong> - A popular sushi restaurant conveniently located near Himeji Station. Known to get crowded, it operates for lunch and dinner. Address: 127-1 Minamiekimaecho, Himeji, Hyogo 670-0962, Japan.</div>
+        <div id="taiyaki-himeji-guide"><strong>Rice Flour Taiyaki Stand (Himeji)</strong> - A stand selling Taiyaki, a Japanese fish-shaped waffle typically filled with sweet red bean paste, made with rice flour. Located a short walk from other Himeji attractions. Address: 104-2 Watamachi, Himeji, Hyogo 670-0921, Japan.</div>
+        <div id="yakiniku-azumi-himeji-guide"><strong>Yakiniku Azumi (Restaurant, Himeji)</strong> - A meat restaurant with its own butcher shop, ensuring high-quality meat. A good place to try Himeji beef, a local premium wagyu. Address: 200 Bakuromachi, Himeji, Hyogo 670-0906, Japan. +81 79 297 7805. Reservation made, concierge fee of JPY 2,400 charged by AutoReserve. Credit card guarantee.</div>
+
+        <div id="epais-osaka-guide"><strong>Epais (Restaurant, Kita, Osaka)</strong> - Considered one of Osaka's best places for Tonkatsu (breaded fried pork cutlet), particularly noted for serving it rare. Hidden in the Kita district, a 6-minute walk from Zentis Osaka. Address: Japan, 〒530-0002 Osaka, Kita Ward, 9, 曽根崎新地1-9-3 ニュー華ビル3F. Reservation requested, awaiting confirmation.</div>
+        <div id="yakitori-ichimatsu-osaka-guide"><strong>Yakitori Ichimatsu (Restaurant, Dojima, Osaka)</strong> - A one-Michelin-star restaurant specializing in chicken (yakitori), known for its elegant atmosphere. Located next to Zentis Osaka. Address: Japan, 〒530-0003 Osaka, Kita Ward, Dojima, 1 Chome−5−1 エスパス北新地２３ １Ｆ.</div>
+        <div id="kushikatsu-bon-osaka-guide"><strong>Kushikatsu Bon (Restaurant, Dojima, Osaka)</strong> - A refined restaurant specializing in kushikatsu (deep-fried skewered meat and vegetables), focusing on quality ingredients and skillful preparation. Features few tables and is a 2-minute walk from Zentis Osaka. Address: Japan, 〒530-0003 Osaka, Kita Ward, Dojima, 1 Chome−3−16, Mc, B1.</div>
+        <div id="umeda-sky-building-guide"><strong>Umeda Sky Building (Kita, Osaka)</strong> - An iconic skyscraper in Osaka, consisting of two towers connected at the top by the "Floating Garden Observatory" (Kuchu Teien), offering panoramic views of the city. Address: 1 Chome-1-88 Oyodonaka, Kita Ward, Osaka.</div>
+        <div id="tenjimbashi-suji-guide"><strong>Tenjimbashi-suji Shopping Street (Kita, Osaka)</strong> - Japan's longest covered shopping arcade (shotengai), stretching approximately 2.6 kilometers. It's filled with a diverse mix of retro shops, local restaurants, cafes, and everyday stores. Address (approx. start): 6 Chome-5-17 Tenjinbashi, Kita Ward, Osaka.</div>
+
+        <!-- Placeholders for Reserved Activity Details -->
+        <div id="guided-tour-tokyo-tower-asakusa-details"><strong>Guided Tour: Tokyo Tower and Asakusa</strong> - 10:00 AM - 6 hr (full day) by Kyotabi Tour Japan. Private walking tour (with public transport), with an English-speaking guide. Does not include tickets, transport, meals, or gratuity. Meeting point: in your hotel lobby. Raphael de Andrade: +81 70 9196 0443.</div>
+        <div id="tokyo-tower-visit-details"><strong>Tickets for Tokyo Tower</strong> - 5:15 PM. Arrive 15 min in advance. 4 Chome-2-8 Shibakoen, Minato City, Tokyo. +81 3 3433 5111. You must present the attached tickets at the elevator on the first floor of Tokyo Tower Foot Town. It will take you to the 2nd floor of the Main Deck (at 150m height), where you will need to change elevators. Proceed to the “Top Deck Gate" where you will need to show the tickets again.</div>
+        <div id="private-tour-hakone-details"><strong>Private tour - Hakone (full day)</strong> - 8 hr by Kyotabi Tour Japan. Private tour, with an English-speaking guide, done by private car. Guide picks up at Mishima station and drops at Hakone hotel. Planned Itinerary: Lake Motosu (View of Mount Fuji); Shiraito Falls (View of Mount Fuji); Iyashino Sato Villages (View of Mount Fuji); Lake Saiko (View of Mount Fuji); Narusawa Ice Cave; Narusawa Wind Cave; Aokigahara Forest; Chureito Pagoda (View of Mount Fuji at Arakurayama Sengen Park). Does not include tickets, meals, or gratuity. Raphael de Andrade: +81 70 9196 0443.</div>
+        <div id="yayoi-kusama-museum-details"><strong>Tickets for the Yayoi Kusama Museum</strong> - 4:00 PM (1 hr 30 min). 107 Bentencho, Shinjuku City, Tokyo 162-0851, Japan. Timed entry tickets, be punctual. The time spent in the museum will be 90 min.</div>
+        <div id="tokyo-skytree-visit-details"><strong>Tickets for Tokyo Skytree</strong> - 6:30 PM. 1 Chome-1-2 Oshiage, Sumida City, Tokyo 131-0045, Japan. +81 570 550 634. 2 adult tickets with fixed date and time allowing access to the Tembo Deck and Tembo Galleria. Virtual tickets can be presented on a mobile phone directly at the ticket office.</div>
+        <div id="guided-tour-tsukiji-details"><strong>Guided Tour - Tsukiji Fish Market</strong> - 9:00 AM (3 hr) by Kyotabi Tour Japan. Private tour, with an English-speaking guide, using public transport (not included). Does not include tickets, transport, meals, or gratuity. Raphael de Andrade: +81 70 9196 0443.</div>
+        <div id="sumo-tournament-details"><strong>Tickets for the Sumo Tournament</strong> - 2:30 PM. Arrive 15 min in advance. Meeting point: RYŌGOKU STATION - WEST ticket gate 1 Chome-3-20 Yokoami, Sumida City, Tokyo 130-0015, Japan. Important: it's the JR Line. Not OEDO. Your guide will be at the WEST ticket gate with a green sign saying "Japan Wonder Travel". Japan Wonder Travel: +81 70 5080 1017. Seats: category B. PIN - ewtUZ=6Q.</div>
+        <div id="ghibli-park-package-details"><strong>2-Day Ghibli Park Package (JTB Global Marketing & Travel Inc.)</strong> - Contact: +81 03 5796 5454. Includes: Ghibli Park O-Sanpo Day Pass Premium. This pass allows entry to all 5 areas of the park: Ghibli's Grand Warehouse (timed entry), Hill of Youth, Dondoko Forest, Mononoke Village, and Valley of Witches. Including the buildings: World Emporium (Hill of Youth), Satsuki and Mei's House (Dondoko Forest), The Okino Residence, Howl's Castle, and The House of Witches (Valley of Witches). One night's accommodation at Mercure Nagoya Cypress, with breakfast included. Does not include transport to/from Ghibli Park (Kyotabi transfer arranged). The attached voucher must be presented at the hotel to collect the ticket at check-in (05/22). This voucher will not be valid at the park entrance, only the tickets will be accepted.</div>
+        <div id="ghibli-park-visit-details"><strong>Premium tickets for Ghibli Park</strong> - 10:00 AM - Access to Ghibli's Grand Warehouse must be at the time indicated on the ticket (between 10:00 AM and 11:00 AM). Premium tickets included in the 2-day Ghibli Park Package. They must be collected from the hotel at check-in. Bring your passports, they will be requested.</div>
+        <div id="guided-tour-arashiyama-details"><strong>Guided Tour - Arashiyama</strong> - 10:00 AM (6 hr) by Kyotabi Tour Japan. Private tour, with an English-speaking guide, using public transport (not included), including the Philosopher's Path. Does not include tickets, transport, meals, or gratuity. Meeting point: hotel lobby. Raphael de Andrade: +81 70 9196 0443.</div>
+        <div id="guided-tour-kiyomizu-gion-details"><strong>Guided Tour - Kiyomizu-dera and Gion</strong> - 9:00 AM (6 hr) by Kyotabi Tour Japan. Private tour, with an English-speaking guide, using public transport (not included). Does not include tickets, transport, meals, or gratuity. Meeting point: hotel lobby. Raphael de Andrade: +81 70 9196 0443.</div>
+        <div id="nintendo-museum-details"><strong>Tickets for the Nintendo Museum</strong> - Access between 3:00 PM and 3:30 PM. More details soon. QR codes can be issued from 2:00 PM on the day before the visit via this link: https://check.museumtickets.nintendo.com/myticket login: handmade@handmadevacations.net password: Senharicardo123. Purchase Number: M0714367155. Payment made on your credit card, in yen, on 03/07.</div>
+        <div id="guided-tour-hiroshima-miyajima-details"><strong>Guided Tour - day trip to Hiroshima and Miyajima</strong> - 9:00 AM (8 hr) by Kyotabi Tour Japan. Private tour, with an English-speaking guide, using public transport (not included). Does not include tickets, transport, meals, or gratuity. Meeting point: hotel lobby. Raphael de Andrade: +81 70 9196 0443.</div>
+        <div id="tea-ceremony-kyoto-details"><strong>Tea Ceremony Experience (Kyoto)</strong> - 11:00 AM (arrive 5 min early). 349-13 Masuyacho, Higashiyama Ward, Kyoto, 605-0826, Japan. +81 75 525 3238. The easiest way to get there is to head to the Park Hyatt hotel. In front of the hotel is a Studio Ghibli store. The alley where the tea house is located is to the left of the store. Activity in English, in small groups, lasting about 45 min.</div>
+        <div id="food-tour-osaka-details"><strong>Food tour in Osaka</strong> - 6:00 PM (3 hr) by Kyotabi Tour Japan. Private tour, with an English-speaking guide, using public transport (not included). Does not include tickets, transport, meals, or gratuity. Meeting point: hotel lobby. Raphael de Andrade: +81 70 9196 0443.</div>
+        <div id="usj-details"><strong>Universal Studios Japan Tickets</strong> - 1 Day Studio Pass - Order Number: 10004524730. 2 Adults, dated for May 28. EXPRESS PASSES: 1.) Universal Express Pass 4: Adventure & Limited - Order Number: 10004524929 [Doraemon 4-D (10:10-10:30), SUPER NINTENDO WORLD Area Entry (11:30-12:30), Yoshi's Adventure (11:30-12:00), Detective Conan 4-D (14:20-14:50), Jaws or Jurassic Park - The Ride (no fixed time)]. 2.) Universal Express Pass 4: Backdrop & Limited - Order Number: 10004525399 [SUPER NINTENDO WORLD Area Entry (13:40-14:40), MarioKart: Koopa's Challenge (13:40-14:10), THE WIZARDING WORLD OF HARRY POTTER Area Entry (15:40-16:40), Harry Potter and the Forbidden Journey (16:00-16:30), Hollywood Dream - The Ride or The Flying Dinosaur (no fixed time), Jaws or Jurassic Park - The Ride (can do both as included in both passes)].</div>
+        <div id="guided-tour-nara-details"><strong>Guided Tour - day trip to Nara</strong> - 10:00 AM (6 hr) by Kyotabi Tour Japan. Private tour, with an English-speaking guide, using public transport (not included). Does not include tickets, transport, meals, or gratuity. Meeting point: hotel lobby. Raphael de Andrade: +81 70 9196 0443.</div>
+        <div id="teamlab-botanical-osaka-details"><strong>Tickets for teamLab Botanical Garden Osaka</strong> - Entry between 7:30 PM - 8:30 PM. 1-23 Nagaikoen, Higashisumiyoshi Ward, Osaka, 546-0034, Japan. +81 6 6699 5120. Link to access your ticket - the 2D code will be available via the link at 00:00 on the day of access. You can go directly to the entrance and present the code to enter the garden. Tickets allow a single entry at the scheduled time, you can stay on site for as long as you want.</div>
+
+    </div>
+
+    <script>
+        // Get the modal
+        var modal = document.getElementById("guidebookModal");
+
+        // Get the elements that will display content in the modal
+        var modalTitle = document.getElementById("modalTitle");
+        var modalText = document.getElementById("modalText");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close-button")[0];
+
+        // Get all links that should open the modal
+        var popupLinks = document.querySelectorAll("a.guidebook-popup-link");
+
+        // When the user clicks on a link, open the modal 
+        popupLinks.forEach(function(link) {
+            link.onclick = function(event) {
+                event.preventDefault(); // Prevent default anchor behavior
+                var contentId = this.getAttribute("href").substring(1); // Get ID from href (e.g., "udon-shin-guide")
+                var contentElement = document.getElementById(contentId);
+
+                if (contentElement) {
+                    var titleHTML = contentElement.querySelector("strong");
+                    var fullTextHTML = contentElement.innerHTML; // Get full HTML content
+                    
+                    if (titleHTML) {
+                        modalTitle.textContent = titleHTML.textContent;
+                        // Remove the strong tag and its content from the fullTextHTML
+                        var textWithoutTitle = fullTextHTML.replace(titleHTML.outerHTML, "").trim();
+                        modalText.innerHTML = textWithoutTitle; // Use innerHTML to preserve any further HTML like <br>
+                    } else {
+                        modalTitle.textContent = "Details"; // Fallback title
+                        modalText.innerHTML = fullTextHTML;
+                    }
+                    
+                    modal.style.display = "block";
+                } else {
+                    console.warn("Content for ID '" + contentId + "' not found.");
+                }
+            }
+        });
+
+        // When the user clicks on <span> (x), close the modal
+        if (span) {
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+
+</body>
+</html>
