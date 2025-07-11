@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: Reltio vs. IBM Match 360</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Slate & Muted Blue -->
+    <!-- Application Structure Plan: The application is structured as a single-page dashboard with tab-based navigation. This non-linear structure was chosen to allow users to explore the report's content based on their specific interests, rather than forcing a sequential reading. The key sections (Overview, Deep Dive, Pros/Cons, Use Cases, IBM Migration) represent logical thematic groupings of the report's information. This design facilitates quick access to comparative data, strategic insights, and specific details, enhancing usability for decision-makers who may be interested in different facets of the comparison (e.g., a technical lead might go to the Deep Dive, while a business strategist might focus on Use Cases). -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: High-level comparison. Goal: Compare. Viz: Radar Chart (Chart.js). Interaction: Tooltips. Justification: A radar chart provides a powerful multi-dimensional visual summary of strengths.
+        - Report Info: Detailed feature comparison. Goal: Compare. Viz: Two-column layout with expandable accordions. Interaction: Click to expand/collapse. Justification: Accordions prevent information overload and allow users to focus on one feature at a time.
+        - Report Info: Pros and Cons. Goal: Compare. Viz: Card-based layout with icons. Interaction: None. Justification: Clear, scannable visual separation of strengths and weaknesses.
+        - Report Info: Industry applications. Goal: Organize/Filter. Viz: Filter buttons and dynamic text content. Interaction: Click to filter. Justification: Allows users to instantly see the relevance of each platform for their specific industry.
+        - Report Info: IBM migration process. Goal: Explain a process. Viz: HTML/CSS based flowchart. Interaction: Hover effects. Justification: A visual flow is more intuitive for understanding a multi-step process than plain text.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 350px; max-height: 450px; }
+        @media (min-width: 768px) { .chart-container { height: 450px; } }
+        .nav-link { transition: all 0.3s ease; }
+        .nav-link.active { color: #2563eb; border-bottom-color: #2563eb; }
+        .nav-link:not(.active) { border-bottom-color: transparent; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; }
+        .use-case-btn.active { background-color: #1e40af; color: #ffffff; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Reltio vs. IBM Match 360</h1>
+            <p class="mt-2 text-lg text-slate-600">An Interactive MDM Solution Comparison</p>
+        </header>
+
+        <nav class="mb-8 border-b border-slate-200">
+            <ul id="main-nav" class="flex flex-wrap -mb-px justify-center text-sm font-medium text-center text-slate-500">
+                <li class="mr-2"><a href="#" data-target="overview" class="nav-link inline-block p-4 border-b-2 rounded-t-lg">Overview</a></li>
+                <li class="mr-2"><a href="#" data-target="deep-dive" class="nav-link inline-block p-4 border-b-2 rounded-t-lg">Deep Dive</a></li>
+                <li class="mr-2"><a href="#" data-target="pros-cons" class="nav-link inline-block p-4 border-b-2 rounded-t-lg">Pros & Cons</a></li>
+                <li class="mr-2"><a href="#" data-target="use-cases" class="nav-link inline-block p-4 border-b-2 rounded-t-lg">Use Cases</a></li>
+                <li class="mr-2"><a href="#" data-target="migration" class="nav-link inline-block p-4 border-b-2 rounded-t-lg">IBM Migration Path</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <section id="overview" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Executive Summary</h2>
+                    <p class="text-slate-700 leading-relaxed">This application provides a strategic comparative analysis of Reltio MDM and IBM Match 360. Both are modern, cloud-native MDM platforms designed to create unified, trusted data views. Key differentiators emerge in their architecture and advanced capabilities. Reltio stands out with its pure SaaS model, rapid deployment via "velocity packs," and GenAI-powered entity resolution. IBM Match 360 is characterized by its deep integration into the IBM Cloud Pak for Data ecosystem, a highly tunable ML-assisted matching engine, and a clear modernization pathway for existing IBM InfoSphere MDM users. This interactive report helps you explore these differences to inform your strategic MDM platform selection.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h2 class="text-2xl font-bold mb-4 text-center text-slate-900">At-a-Glance Comparison</h2>
+                    <p class="text-slate-600 text-center mb-6">This chart provides a high-level visual comparison of the two platforms across key strategic dimensions. A higher score indicates a stronger emphasis or capability in that area based on the source report.</p>
+                    <div class="chart-container">
+                        <canvas id="comparisonRadarChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="deep-dive" class="content-section">
+                 <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-slate-900">Feature Deep Dive</h2>
+                    <p class="mt-2 text-md text-slate-600">Explore a detailed, side-by-side comparison of core features and capabilities. Click on any category below to expand the details.</p>
+                </div>
+                <div id="accordion-container" class="space-y-4"></div>
+            </section>
+
+            <section id="pros-cons" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-slate-900">Strengths & Limitations</h2>
+                     <p class="mt-2 text-md text-slate-600">A balanced view of the reported pros and cons for each platform, providing insight into real-world performance and user experience.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div id="reltio-pros-cons">
+                        <h3 class="text-xl font-bold mb-4 text-center text-teal-700">Reltio MDM</h3>
+                    </div>
+                    <div id="ibm-pros-cons">
+                        <h3 class="text-xl font-bold mb-4 text-center text-blue-700">IBM Match 360</h3>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="use-cases" class="content-section">
+                 <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-slate-900">Industry Use Cases</h2>
+                    <p class="mt-2 text-md text-slate-600">Discover how each MDM solution is applied in different industries. Select an industry below to see relevant applications and benefits.</p>
+                </div>
+                <div id="use-case-filters" class="flex flex-wrap justify-center gap-2 mb-8"></div>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-teal-700">Reltio MDM</h3>
+                        <div id="reltio-use-case-content" class="bg-white p-6 rounded-lg shadow-sm space-y-3 min-h-[200px]"></div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-blue-700">IBM Match 360</h3>
+                        <div id="ibm-use-case-content" class="bg-white p-6 rounded-lg shadow-sm space-y-3 min-h-[200px]"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="migration" class="content-section">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-slate-900">Migration Path for IBM InfoSphere Users</h2>
+                    <p class="mt-2 text-md text-slate-600 max-w-3xl mx-auto">For organizations currently using IBM InfoSphere MDM, migrating to IBM Match 360 offers a strategic modernization pathway. This section outlines the process and key benefits of this evolution.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
+                    <h3 class="text-xl font-semibold mb-4">Migration Process Overview</h3>
+                    <div class="flex flex-col md:flex-row justify-center items-center gap-4 text-center">
+                         <div class="p-4 bg-slate-100 rounded-lg flex-1">
+                            <div class="text-2xl mb-2">1️⃣</div>
+                            <h4 class="font-semibold">Export from InfoSphere</h4>
+                            <p class="text-sm text-slate-600">Use the MDM Publisher tool to export master data, including relationships and consent details.</p>
+                        </div>
+                        <div class="text-2xl text-slate-400 font-bold">→</div>
+                        <div class="p-4 bg-slate-100 rounded-lg flex-1">
+                            <div class="text-2xl mb-2">2️⃣</div>
+                            <h4 class="font-semibold">Load to Cloud Pak</h4>
+                             <p class="text-sm text-slate-600">Data is transferred via a high-speed service to the IBM Match 360 instance on Cloud Pak for Data.</p>
+                        </div>
+                        <div class="text-2xl text-slate-400 font-bold">→</div>
+                         <div class="p-4 bg-slate-100 rounded-lg flex-1">
+                            <div class="text-2xl mb-2">3️⃣</div>
+                            <h4 class="font-semibold">Match & Master</h4>
+                             <p class="text-sm text-slate-600">A Data Engineer runs the matching algorithm to incorporate the ingested data into new master entities.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-xl font-semibold mb-4">Key Benefits of Modernization</h3>
+                    <div id="migration-benefits" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const reportData = {
+            comparison: {
+                labels: ['Time to Value', 'AI/ML Automation', 'Ecosystem Integration', 'Matching Tunability', 'API & Connectivity', 'Industry Specialization'],
+                reltio: [9, 9, 7, 7, 9, 9],
+                ibm: [7, 8, 9, 9, 7, 6]
+            },
+            deepDive: [
+                {
+                    title: 'Matching & Entity Resolution',
+                    reltio: 'Leads with LLM-powered Flexible Entity Resolution Networks (FERN) for "rule-free matching." Emphasizes automated, high-accuracy matching with minimal manual effort using GenAI.',
+                    ibm: 'Provides a highly configurable, ML-assisted engine supporting probabilistic, deterministic, and rule-based styles. Emphasizes human-in-the-loop training ("pair reviews") and granular API tuning for complex scenarios.'
+                },
+                {
+                    title: 'Architecture & Scalability',
+                    reltio: 'A pure cloud-native SaaS solution offering zero-downtime upgrades, built-in HA/DR, and multi-cloud support. Designed for a hands-off operational experience.',
+                    ibm: 'A cloud-native, microservices architecture as part of IBM Cloud Pak for Data. Uses a Neo4j graph database. Offers more deployment flexibility (e.g., hybrid cloud) but may require more infrastructure awareness.'
+                },
+                {
+                    title: 'Multidomain Support',
+                    reltio: 'Explicitly designed as a multi-domain platform with a flexible data model. "Velocity packs" offer pre-configured models for various industries, accelerating new domain onboarding.',
+                    ibm: 'A multi-domain service with a foundational data model to support various domains. Strength lies in building out domains within the integrated Cloud Pak for Data toolset.'
+                },
+                {
+                    title: 'Data Quality & Governance',
+                    reltio: 'Focuses on continuous, automated data quality management with ML-powered anomaly detection that flags issues for data stewards, aiming to reduce manual effort.',
+                    ibm: 'Empowers data stewards with ML-enhanced tools for issue identification, remediation, and task generation. Can quarantine potential overlay issues for manual review.'
+                },
+                {
+                    title: 'Integration & API',
+                    reltio: 'Features an API-first philosophy with ultra-fast APIs (<50ms), a low-code/no-code environment, and over 1000 pre-built connectors for broad ecosystem connectivity.',
+                    ibm: 'Integration strength is within the IBM Cloud Pak for Data ecosystem (DataStage, Watson Query). Also provides a rich set of APIs for external business applications.'
+                }
+            ],
+            prosCons: {
+                reltio: {
+                    pros: [
+                        { title: 'GenAI-Powered Innovation', text: 'Features cutting-edge LLM-powered "rule-free" matching (FERN) and a natural language assistant (RIA).'},
+                        { title: 'Rapid Time-to-Value', text: '"Velocity packs" provide pre-built industry solutions to accelerate deployment to 90 days or less.' },
+                        { title: 'Real-time Synchronization', text: 'API-first architecture enables event posting in fractions of seconds for immediate operational use cases.' },
+                        { title: 'Pure SaaS Model', text: 'Offers zero-downtime, zero-effort upgrades and a highly scalable cloud-native architecture.' },
+                    ],
+                    cons: [
+                        { title: 'Reference Attribute Drawbacks', text: 'Advanced features can add write performance overhead, generate noisy events, and lack certain validation support.' },
+                        { title: 'Support & Feature Lag', text: 'Users have reported slow support response times and lag in development of new features via the request portal.' },
+                        { title: 'Potential Complexity', text: 'Despite out-of-the-box features, some users report complex deployments requiring significant manual configuration.' },
+                        { title: 'API Limitations', text: 'Some reports of data posting rejections and slower response times, suggesting a need for increased capacity.' },
+                    ]
+                },
+                ibm: {
+                    pros: [
+                        { title: 'Seamless IBM Ecosystem Integration', text: 'Deeply integrated with IBM Cloud Pak for Data, enabling a unified data fabric with services like Knowledge Catalog and DataStage.' },
+                        { title: 'Clear Migration Path', text: 'Provides a direct, tool-supported pathway for existing IBM InfoSphere MDM users to modernize, preserving data and hierarchies.'},
+                        { title: 'Highly Tunable Matching', text: 'Offers granular control over probabilistic, deterministic, and rule-based matching, ideal for complex requirements.' },
+                        { title: 'Robust Governance Tools', text: 'Empowers data stewards with ML-enhanced tools to identify, remediate, and quarantine data quality issues.' },
+                    ],
+                    cons: [
+                        { title: 'Known Operational Issues', text: 'Extensive list of known issues related to installation, upgrades, search, and event streaming requires careful management.' },
+                        { title: 'Documentation Gaps', text: 'Users report a lack of comprehensive documentation, often relying on community posts for solutions.' },
+                        { title: 'Ecosystem Dependency', text: 'Maximum value is realized within the IBM ecosystem; integration with non-IBM tools may require more custom effort.' },
+                        { title: 'Scalability Nuances', text: 'Default configurations (e.g., Elasticsearch) may require tuning for very large data volumes (beyond 5M entities).' },
+                    ]
+                }
+            },
+            useCases: {
+                'Financial Services': {
+                    reltio: 'Drives omnichannel customer experience and AI-powered banking. Simplifies risk and compliance management for KYC, OFAC, and AML. Enables AI-driven fraud analytics.',
+                    ibm: 'Optimizes customer experience, increases revenues, and reduces costs with GenAI. Offers personalized interactions and improves regulatory compliance and risk management.'
+                },
+                'Healthcare': {
+                    reltio: 'Improves consumer experience with holistic patient/member data. Unifies complex provider data and simplifies compliance with HIPAA and HITRUST.',
+                    ibm: 'Underpins solutions to streamline tasks, analyze population health trends, and leverage AI healthcare chatbots. Improves security, IT, and customer service.'
+                },
+                'Life Sciences': {
+                    reltio: 'Drives sales with complete HCP/HCO data. Speeds clinical trials and powers AI/ML systems with trusted data. Ensures compliance with Sunshine Act & IDMP.',
+                    ibm: 'While not explicitly detailed for Match 360, its capabilities are foundational for broader IBM AI and data solutions used in life sciences research and operations.'
+                },
+                'Retail & CPG': {
+                    reltio: 'Deepens customer loyalty with personalized marketing. Optimizes pricing, assortment, and replenishment. Enables fast SKU and store introductions.',
+                    ibm: 'Provides the foundational 360-degree customer view necessary for optimizing pricing, assortment, personalizing customer experiences, and improving data quality.'
+                }
+            },
+            migrationBenefits: [
+                { icon: '☁️', title: 'Modern Platform', text: 'Transition to a modern, cloud-native, microservices-based solution on IBM Cloud Pak for Data.' },
+                { icon: '🧠', title: 'Advanced Matching', text: 'Gain ML-assisted matching, self-service tuning, and enhanced stewardship tools.' },
+                { icon: '🔗', title: 'Improved Hierarchies', text: 'Import existing groups and member records, and create/maintain new hierarchies within master data.' },
+                { icon: '⚡️', title: 'Performance Boost', text: 'Leverage a Neo4j graph database and persisted entity views for greater data consistency, scaling, and faster searches.' },
+                { icon: '🎨', title: 'Enhanced UX', text: 'Benefit from a streamlined user interface with improved navigation and clearer entity profiles.' },
+                { icon: '🕸️', title: 'Data Fabric Integration', text: 'Achieve seamless integration with other IBM Data Fabric components like Knowledge Catalog and DataStage.' }
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const nav = document.getElementById('main-nav');
+            const sections = document.querySelectorAll('.content-section');
+            const accordionContainer = document.getElementById('accordion-container');
+            const reltioProsConsContainer = document.getElementById('reltio-pros-cons');
+            const ibmProsConsContainer = document.getElementById('ibm-pros-cons');
+            const useCaseFiltersContainer = document.getElementById('use-case-filters');
+            const reltioUseCaseContent = document.getElementById('reltio-use-case-content');
+            const ibmUseCaseContent = document.getElementById('ibm-use-case-content');
+            const migrationBenefitsContainer = document.getElementById('migration-benefits');
+
+            function setActiveTab(targetId) {
+                nav.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.toggle('active', link.dataset.target === targetId);
+                });
+                sections.forEach(section => {
+                    section.classList.toggle('active', section.id === targetId);
+                });
+                window.scrollTo(0, 0);
+            }
+
+            nav.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && e.target.dataset.target) {
+                    e.preventDefault();
+                    setActiveTab(e.target.dataset.target);
+                }
+            });
+
+            function createRadarChart() {
+                const ctx = document.getElementById('comparisonRadarChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: reportData.comparison.labels,
+                        datasets: [{
+                            label: 'Reltio MDM',
+                            data: reportData.comparison.reltio,
+                            backgroundColor: 'rgba(13, 148, 136, 0.2)',
+                            borderColor: 'rgb(13, 148, 136)',
+                            pointBackgroundColor: 'rgb(13, 148, 136)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(13, 148, 136)'
+                        }, {
+                            label: 'IBM Match 360',
+                            data: reportData.comparison.ibm,
+                            backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                            borderColor: 'rgb(37, 99, 235)',
+                            pointBackgroundColor: 'rgb(37, 99, 235)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(37, 99, 235)'
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { display: true },
+                                suggestedMin: 0,
+                                suggestedMax: 10,
+                                pointLabels: { font: { size: 12 } },
+                                ticks: { backdropColor: 'transparent', stepSize: 2 }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) { label += ': '; }
+                                        if (context.parsed.r !== null) { label += context.parsed.r; }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function populateDeepDive() {
+                reportData.deepDive.forEach((item, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'border border-slate-200 rounded-lg bg-white shadow-sm';
+                    div.innerHTML = `
+                        <button class="accordion-toggle w-full flex justify-between items-center p-5 text-left font-semibold text-slate-800 hover:bg-slate-50">
+                            <span>${item.title}</span>
+                            <span class="transform transition-transform duration-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </span>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="p-5 border-t border-slate-200 grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-bold text-teal-700 mb-2">Reltio</h4>
+                                    <p class="text-slate-600">${item.reltio}</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-blue-700 mb-2">IBM</h4>
+                                    <p class="text-slate-600">${item.ibm}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    accordionContainer.appendChild(div);
+                });
+
+                accordionContainer.addEventListener('click', (e) => {
+                    const button = e.target.closest('.accordion-toggle');
+                    if (button) {
+                        const content = button.nextElementSibling;
+                        const icon = button.querySelector('svg').parentElement;
+                        button.parentElement.classList.toggle('open');
+                        icon.classList.toggle('rotate-180');
+                        if (content.style.maxHeight) {
+                            content.style.maxHeight = null;
+                        } else {
+                            content.style.maxHeight = content.scrollHeight + "px";
+                        }
+                    }
+                });
+            }
+
+            function populateProsCons() {
+                const createCard = (item, type) => `
+                    <div class="flex items-start space-x-4 p-4 rounded-lg ${type === 'pro' ? 'bg-green-50' : 'bg-red-50'}">
+                        <div class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${type === 'pro' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">
+                            ${type === 'pro' ? '✓' : '✗'}
+                        </div>
+                        <div>
+                            <h5 class="font-semibold text-slate-800">${item.title}</h5>
+                            <p class="text-slate-600 text-sm">${item.text}</p>
+                        </div>
+                    </div>`;
+
+                const reltioPros = document.createElement('div');
+                reltioPros.className = 'space-y-3';
+                reltioPros.innerHTML = `<h4 class="font-semibold text-lg text-green-700">Pros</h4>` + reportData.prosCons.reltio.pros.map(p => createCard(p, 'pro')).join('');
+                reltioProsConsContainer.appendChild(reltioPros);
+
+                const reltioCons = document.createElement('div');
+                reltioCons.className = 'space-y-3 mt-6';
+                reltioCons.innerHTML = `<h4 class="font-semibold text-lg text-red-700">Cons</h4>` + reportData.prosCons.reltio.cons.map(c => createCard(c, 'con')).join('');
+                reltioProsConsContainer.appendChild(reltioCons);
+
+                const ibmPros = document.createElement('div');
+                ibmPros.className = 'space-y-3';
+                ibmPros.innerHTML = `<h4 class="font-semibold text-lg text-green-700">Pros</h4>` + reportData.prosCons.ibm.pros.map(p => createCard(p, 'pro')).join('');
+                ibmProsConsContainer.appendChild(ibmPros);
+
+                const ibmCons = document.createElement('div');
+                ibmCons.className = 'space-y-3 mt-6';
+                ibmCons.innerHTML = `<h4 class="font-semibold text-lg text-red-700">Cons</h4>` + reportData.prosCons.ibm.cons.map(c => createCard(c, 'con')).join('');
+                ibmProsConsContainer.appendChild(ibmCons);
+            }
+            
+            function populateUseCases() {
+                const industries = Object.keys(reportData.useCases);
+                industries.forEach(industry => {
+                    const button = document.createElement('button');
+                    button.textContent = industry;
+                    button.dataset.industry = industry;
+                    button.className = 'use-case-btn px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-full hover:bg-slate-100 transition';
+                    useCaseFiltersContainer.appendChild(button);
+                });
+
+                function setUseCaseContent(industry) {
+                    const data = reportData.useCases[industry];
+                    reltioUseCaseContent.innerHTML = `<p>${data.reltio}</p>`;
+                    ibmUseCaseContent.innerHTML = `<p>${data.ibm}</p>`;
+                    
+                    useCaseFiltersContainer.querySelectorAll('.use-case-btn').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.industry === industry);
+                    });
+                }
+
+                useCaseFiltersContainer.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON' && e.target.dataset.industry) {
+                        setUseCaseContent(e.target.dataset.industry);
+                    }
+                });
+
+                setUseCaseContent(industries[0]);
+            }
+
+            function populateMigrationBenefits() {
+                reportData.migrationBenefits.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-start space-x-4';
+                    div.innerHTML = `
+                        <div class="flex-shrink-0 text-2xl">${item.icon}</div>
+                        <div>
+                            <h5 class="font-semibold text-slate-800">${item.title}</h5>
+                            <p class="text-slate-600 text-sm">${item.text}</p>
+                        </div>
+                    `;
+                    migrationBenefitsContainer.appendChild(div);
+                });
+            }
+
+            createRadarChart();
+            populateDeepDive();
+            populateProsCons();
+            populateUseCases();
+            populateMigrationBenefits();
+            setActiveTab('overview');
+        });
+    </script>
+</body>
+</html>
