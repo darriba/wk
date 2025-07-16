@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: DataStage 11.7 vs NextGen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Harmony -->
+    <!-- Application Structure Plan: The SPA is designed as a thematic, interactive dashboard. A top navigation bar allows users to jump directly to key comparison areas (e.g., Architecture, Performance), abandoning the linear structure of the source report. This non-linear exploration is ideal for technical decision-makers who need to compare specific facets of the two versions quickly. The core of the app is a side-by-side comparison within each theme, using cards and bullet points for scannability. An interactive radar chart provides a high-level quantitative summary, offering an immediate visual understanding of NextGen's advantages. This structure prioritizes user-driven exploration and rapid synthesis of information over passive reading. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Overall comparison of capabilities. Goal: Compare. Viz: Radar Chart (Chart.js/Canvas). Interaction: Hover tooltips. Justification: Provides a powerful, at-a-glance summary of NextGen's relative superiority across key vectors, making the core argument visual and compelling.
+        - Report Info: Architectural differences. Goal: Organize/Explain. Viz: HTML/CSS Diagram. Interaction: Static visual. Justification: A simple block diagram is the clearest way to explain the fundamental, non-quantitative shift from a monolithic to a decoupled, hybrid architecture. It communicates the core concept faster than text alone.
+        - Report Info: Detailed feature comparisons. Goal: Inform/Compare. Viz: Thematic Cards (HTML/CSS). Interaction: Navigation clicks to reveal sections. Justification: Breaks down the dense report text into digestible, themed chunks, presented side-by-side for direct comparison, enhancing readability and user control.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .nav-link { transition: all 0.3s ease; }
+        .nav-link.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 600; }
+        .nav-link:not(.active) { border-bottom-color: transparent; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .benefit-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .benefit-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div id="app" class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-2">DataStage: The Evolution</h1>
+            <p class="text-lg text-gray-600">An interactive comparison of Traditional DataStage 11.7 and the cloud-native NextGen platform.</p>
+        </header>
+
+        <nav class="sticky top-0 bg-gray-50/80 backdrop-blur-sm z-10 mb-12 border-b border-gray-200">
+            <ul class="flex items-center justify-center flex-wrap" id="nav-menu">
+                <li><a href="#summary" class="nav-link text-gray-600 hover:text-blue-600 font-medium py-4 px-3 sm:px-4 inline-block border-b-2">Summary</a></li>
+                <li><a href="#architecture" class="nav-link text-gray-600 hover:text-blue-600 font-medium py-4 px-3 sm:px-4 inline-block border-b-2">Architecture</a></li>
+                <li><a href="#deployment" class="nav-link text-gray-600 hover:text-blue-600 font-medium py-4 px-3 sm:px-4 inline-block border-b-2">Deployment</a></li>
+                <li><a href="#functionality" class="nav-link text-gray-600 hover:text-blue-600 font-medium py-4 px-3 sm:px-4 inline-block border-b-2">Functionality</a></li>
+                <li><a href="#devex" class="nav-link text-gray-600 hover:text-blue-600 font-medium py-4 px-3 sm:px-4 inline-block border-b-2">Developer Experience</a></li>
+                <li><a href="#performance" class="nav-link text-gray-600 hover:text-blue-600 font-medium py-4 px-3 sm:px-4 inline-block border-b-2">Performance</a></li>
+                <li><a href="#governance" class="nav-link text-gray-600 hover:text-blue-600 font-medium py-4 px-3 sm:px-4 inline-block border-b-2">Governance</a></li>
+            </ul>
+        </nav>
+
+        <main id="main-content">
+
+            <section id="summary" class="content-section">
+                <div class="text-center mb-12 max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">At a Glance: NextGen's Leap Forward</h2>
+                    <p class="text-gray-600 text-lg">This section provides a high-level visual summary of the key advantages DataStage NextGen offers over version 11.7. The chart below quantifies the evolution across critical dimensions, from architectural flexibility to developer productivity. Interact with the chart to see how the cloud-native approach delivers superior capabilities for modern data challenges.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="chart-container">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                </div>
+                 <div class="mt-16">
+                    <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center">Core Benefits of Modernization</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="benefits-grid">
+                    </div>
+                </div>
+            </section>
+
+            <section id="architecture" class="content-section">
+                <div class="text-center mb-12 max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Architectural Paradigm Shift</h2>
+                    <p class="text-gray-600 text-lg">Explore the fundamental architectural differences between the two versions. This section visualizes the transition from a unified, on-premises system to a decoupled, cloud-native microservices architecture. Understanding this shift is key to appreciating the flexibility and scalability inherent in DataStage NextGen.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                    <div class="p-6 bg-white rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4 text-center">DataStage 11.7: Monolithic & Unified</h3>
+                        <div class="p-4 bg-gray-100 rounded-lg">
+                             <div class="border-2 border-dashed border-gray-400 p-4 rounded-lg bg-white">
+                                <p class="text-center font-semibold text-lg mb-2">IBM InfoSphere Information Server</p>
+                                <div class="space-y-2 p-2 bg-slate-200 rounded">
+                                    <div class="bg-slate-300 p-2 rounded text-center font-medium">Shared Metadata Repository</div>
+                                    <div class="bg-slate-300 p-2 rounded text-center font-medium">Common Services</div>
+                                    <div class="bg-blue-200 p-3 rounded text-center font-semibold">Parallel Engine (DataStage)</div>
+                                    <div class="bg-slate-300 p-2 rounded text-center font-medium">QualityStage & Other Tools</div>
+                                </div>
+                             </div>
+                        </div>
+                        <ul class="mt-4 space-y-2 list-disc list-inside text-gray-700"></ul>
+                    </div>
+                    <div class="p-6 bg-white rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4 text-center">DataStage NextGen: Decoupled & Hybrid</h3>
+                        <div class="p-4 bg-gray-100 rounded-lg space-y-4">
+                            <div class="border-2 border-dashed border-blue-400 p-4 rounded-lg bg-white">
+                                <p class="text-center font-semibold text-lg mb-2">Cloud (IBM Managed)</p>
+                                <div class="bg-blue-200 p-3 rounded text-center font-semibold">Control Plane (Design, AI, Git)</div>
+                            </div>
+                            <div class="text-center font-bold text-2xl text-gray-400">↔</div>
+                             <div class="border-2 border-dashed border-teal-400 p-4 rounded-lg bg-white">
+                                <p class="text-center font-semibold text-lg mb-2">Customer Environment (Anywhere)</p>
+                                <div class="bg-teal-200 p-3 rounded text-center font-semibold">Data Plane (Remote Parallel Engine)</div>
+                            </div>
+                        </div>
+                         <ul class="mt-4 space-y-2 list-disc list-inside text-gray-700"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="deployment" class="content-section">
+                 <div class="text-center mb-12 max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Deployment Flexibility</h2>
+                    <p class="text-gray-600 text-lg">The deployment model is a critical differentiator. This section contrasts the traditional on-premises requirements of version 11.7 with NextGen's "design once, run anywhere" philosophy. See how NextGen's hybrid and multi-cloud capabilities solve modern challenges like data sovereignty, latency, and egress costs by processing data where it lives.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div class="p-6 bg-white rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">DataStage 11.7</h3>
+                         <ul class="space-y-3 list-disc list-inside text-gray-700"></ul>
+                    </div>
+                     <div class="p-6 bg-white rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">DataStage NextGen</h3>
+                        <ul class="space-y-3 list-disc list-inside text-gray-700"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="functionality" class="content-section">
+                <div class="text-center mb-12 max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Functionality & Integration Patterns</h2>
+                    <p class="text-gray-600 text-lg">What can the tools actually do? This comparison moves from traditional batch ETL to the multi-modal capabilities of NextGen. It highlights the expanded support for real-time streaming, ELT patterns, and modern data formats, showing how NextGen serves as a comprehensive component of an enterprise data fabric, not just an ETL tool.</p>
+                </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div class="p-6 bg-white rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">DataStage 11.7</h3>
+                         <ul class="space-y-3 list-disc list-inside text-gray-700"></ul>
+                    </div>
+                     <div class="p-6 bg-white rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">DataStage NextGen</h3>
+                        <ul class="space-y-3 list-disc list-inside text-gray-700"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="devex" class="content-section">
+                <div class="text-center mb-12 max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Developer Experience & DataOps</h2>
+                    <p class="text-gray-600 text-lg">The developer experience has been completely reimagined. This section contrasts the Windows-based thick client of 11.7 with NextGen's fully web-based, AI-assisted canvas. Discover how native Git integration, a Python SDK, and robust DataOps tooling accelerate development, improve collaboration, and increase pipeline reliability.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div class="p-6 bg-white rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">DataStage 11.7</h3>
+                         <ul class="space-y-3 list-disc list-inside text-gray-700"></ul>
+                    </div>
+                     <div class="p-6 bg-white rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">DataStage NextGen</h3>
+                        <ul class="space-y-3 list-disc list-inside text-gray-700"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="performance" class="content-section">
+                 <div class="text-center mb-12 max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Performance & Scalability</h2>
+                    <p class="text-gray-600 text-lg">Performance evolves from optimizing within fixed hardware to leveraging cloud elasticity. Compare the hardware-bound scalability of 11.7, which often required manual tuning, with NextGen's elastic, on-demand scaling. The key is NextGen's ability to minimize data movement, which drastically reduces latency and improves throughput.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div class="p-6 bg-white rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">DataStage 11.7</h3>
+                         <ul class="space-y-3 list-disc list-inside text-gray-700"></ul>
+                    </div>
+                     <div class="p-6 bg-white rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">DataStage NextGen</h3>
+                        <ul class="space-y-3 list-disc list-inside text-gray-700"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="governance" class="content-section">
+                 <div class="text-center mb-12 max-w-4xl mx-auto">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">Data Governance & Observability</h2>
+                     <p class="text-gray-600 text-lg">This section highlights the strategic shift from reactive governance to proactive data fabric orchestration. While 11.7 had robust cataloging, NextGen introduces continuous data observability as a core, built-in reliability feature. Explore how this ensures data trustworthiness throughout its lifecycle, moving beyond simple checks to intelligent, real-time monitoring.</p>
+                </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div class="p-6 bg-white rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">DataStage 11.7</h3>
+                         <ul class="space-y-3 list-disc list-inside text-gray-700"></ul>
+                    </div>
+                     <div class="p-6 bg-white rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">DataStage NextGen</h3>
+                        <ul class="space-y-3 list-disc list-inside text-gray-700"></ul>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="text-center mt-16 pt-8 border-t border-gray-200">
+            <p class="text-gray-500">Interactive report generated based on the "IBM DataStage Evolution" analysis.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const reportData = {
+                summary: {
+                    chart: {
+                        labels: ['Architecture', 'Deployment', 'Functionality', 'Developer Exp.', 'Performance', 'Governance'],
+                        datasets: [
+                            { label: 'DataStage 11.7', data: [2, 1, 3, 2, 3, 3], fill: true, backgroundColor: 'rgba(156, 163, 175, 0.2)', borderColor: 'rgb(107, 114, 128)', pointBackgroundColor: 'rgb(107, 114, 128)' },
+                            { label: 'DataStage NextGen', data: [5, 5, 5, 5, 5, 5], fill: true, backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgb(37, 99, 235)', pointBackgroundColor: 'rgb(37, 99, 235)' }
+                        ]
+                    },
+                    benefits: [
+                        { icon: '🚀', title: 'Agility and Speed', text: 'Cloud-native architecture and AI-assisted design significantly accelerate pipeline development and deployment.' },
+                        { icon: '💰', title: 'Cost Optimization', text: 'Remote execution engine minimizes data egress costs, while elastic scaling optimizes infrastructure spend.' },
+                        { icon: '🌐', title: 'Hybrid Flexibility', text: '"Design once, run anywhere" paradigm ensures data sovereignty and security across any cloud or on-prem environment.' },
+                        { icon: '🛡️', title: 'Data Trustworthiness', text: 'Integrated observability and governance deliver high-quality, trusted data for analytics and AI.' },
+                        { icon: '🔮', title: 'Future-Proofing', text: 'Supports modern data formats (Iceberg, Delta Lake) and integration patterns (streaming, CDC).' },
+                        { icon: '👨‍💻', title: 'Modern Developer Experience', text: 'A web-based UI with native Git integration and a Python SDK enhances productivity and collaboration.' }
+                    ]
+                },
+                architecture: {
+                    v11_7: [
+                        "Based on monolithic IBM InfoSphere Information Server.",
+                        "Unified, multi-tier architecture with shared services.",
+                        "Tightly coupled components limit independent scaling.",
+                        "Complex upgrades often require significant planning."
+                    ],
+                    nextGen: [
+                        "Cloud-native, microservices architecture on Red Hat OpenShift.",
+                        "Decoupled Control Plane (design) and Data Plane (execution).",
+                        "Modular design allows for elastic resource management.",
+                        "Inherently agile, reliable, and scalable."
+                    ]
+                },
+                deployment: {
+                    v11_7: [
+                        "Primarily on-premises, requiring dedicated hardware.",
+                        "Scalability is bound by the physical infrastructure.",
+                        "Limited containerization, not core to the architecture.",
+                        "High upfront infrastructure and maintenance costs."
+                    ],
+                    nextGen: [
+                        "Hybrid & Multi-Cloud by design: Run anywhere.",
+                        "Remote engine processes data at the source (on-prem, any cloud).",
+                        "Drastically reduces data movement and egress costs.",
+                        "Ensures data sovereignty and enhances security."
+                    ]
+                },
+                functionality: {
+                    v11_7: [
+                        "Primarily a traditional ETL tool with strong batch processing.",
+                        "Some support for ELT patterns.",
+                        "Expanded connectivity to Hadoop ecosystem and some cloud sources.",
+                        "Introduced job checkpointing for resilience."
+                    ],
+                    nextGen: [
+                        "Multi-modal: Supports ETL, ELT, and TETL patterns.",
+                        "Handles real-time streaming, replication (CDC), and batch.",
+                        "Vastly expanded connectivity, including modern formats like Iceberg & Delta Lake.",
+                        "Integrated data observability and AI-driven quality checks."
+                    ]
+                },
+                devex: {
+                    v11_7: [
+                        "Development centered on a Windows-based 'thick client' (Designer).",
+                        "Web-based Flow Designer was complementary, not a replacement.",
+                        "Nascent AI/ML features for basic design suggestions.",
+                        "CI/CD and version control relied on external tools."
+                    ],
+                    nextGen: [
+                        "Fully web-based, ML-assisted, multi-persona design canvas.",
+                        "AI pipeline assistant for natural language design.",
+                        "Native Git integration for robust DataOps and version control.",
+                        "Full-featured Python SDK for programmatic development."
+                    ]
+                },
+                performance: {
+                    v11_7: [
+                        "Powerful parallel engine, but hardware-bound.",
+                        "Scalability often required extensive manual tuning of system parameters.",
+                        "Performance could be bottlenecked by resource exhaustion.",
+                        "Scaling on demand was not a native feature."
+                    ],
+                    nextGen: [
+                        "Evolved parallel engine optimized for cloud environments.",
+                        "Elastic, on-demand scaling and automatic workload balancing.",
+                        "Remote execution minimizes data movement and network latency.",
+                        "Leverages modern hardware (Power, Z) for optimized throughput."
+                    ]
+                },
+                governance: {
+                    v11_7: [
+                        "Information Governance Catalog (IGC New) for discovery and analysis.",
+                        "Supported data rules and automation for quality checks.",
+                        "Reactive dashboards for monitoring quality.",
+                        "Metadata shared across the InfoSphere suite."
+                    ],
+                    nextGen: [
+                        "Proactive, continuous data observability is a core feature.",
+                        "Deep integration with Watson Knowledge Catalog for a full data fabric.",
+                        "Automated end-to-end data lineage and policy enforcement.",
+                        "Focus on delivering governed, reusable 'Data Products'."
+                    ]
+                }
+            };
+
+            const navMenu = document.getElementById('nav-menu');
+            const contentSections = document.querySelectorAll('.content-section');
+            let currentView = 'summary';
+
+            function populateContent() {
+                for (const sectionKey in reportData) {
+                    if (sectionKey === 'summary') continue; 
+                    const sectionEl = document.getElementById(sectionKey);
+                    if (sectionEl) {
+                        const [v11_7_ul, nextGen_ul] = sectionEl.querySelectorAll('ul');
+                        reportData[sectionKey].v11_7.forEach(item => {
+                            const li = document.createElement('li');
+                            li.textContent = item;
+                            v11_7_ul.appendChild(li);
+                        });
+                        reportData[sectionKey].nextGen.forEach(item => {
+                            const li = document.createElement('li');
+                            li.textContent = item;
+                            nextGen_ul.appendChild(li);
+                        });
+                    }
+                }
+                
+                const benefitsGrid = document.getElementById('benefits-grid');
+                reportData.summary.benefits.forEach(benefit => {
+                    const card = document.createElement('div');
+                    card.className = 'benefit-card text-center';
+                    card.innerHTML = `
+                        <div class="text-4xl mb-4">${benefit.icon}</div>
+                        <h4 class="text-xl font-semibold text-gray-900 mb-2">${benefit.title}</h4>
+                        <p class="text-gray-600">${benefit.text}</p>
+                    `;
+                    benefitsGrid.appendChild(card);
+                });
+            }
+
+            function renderChart() {
+                const ctx = document.getElementById('comparisonChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: reportData.summary.chart,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                                grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                                pointLabels: { font: { size: 14 } },
+                                suggestedMin: 0,
+                                suggestedMax: 5,
+                                ticks: {
+                                    stepSize: 1,
+                                    backdropColor: 'rgba(255, 255, 255, 0.75)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { font: { size: 14 } }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.r !== null) {
+                                            label += context.parsed.r;
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            function updateView() {
+                contentSections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === currentView) {
+                        section.classList.add('active');
+                    }
+                });
+
+                navMenu.querySelectorAll('a').forEach(link => {
+                    link.classList.remove('active');
+                    if(link.getAttribute('href') === `#${currentView}`){
+                         link.classList.add('active');
+                    }
+                });
+            }
+
+            navMenu.addEventListener('click', (e) => {
+                if(e.target.tagName === 'A'){
+                    e.preventDefault();
+                    const targetId = e.target.getAttribute('href').substring(1);
+                    currentView = targetId;
+                    updateView();
+                    
+                    const targetSection = document.getElementById(targetId);
+                    if(targetSection){
+                         targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            });
+
+            populateContent();
+            renderChart();
+            updateView();
+        });
+    </script>
+</body>
+</html>
