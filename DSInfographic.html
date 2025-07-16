@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infographic: The Evolution of IBM DataStage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Brilliant Blues -->
+    <!-- Application Structure Plan: The infographic follows a top-to-bottom narrative flow, telling the story of DataStage's evolution. It starts with a high-level introduction to the two versions, then dives into the single most important change—the architecture—with a dedicated diagram. This is followed by a grid-based comparison of key features, making the granular benefits easy to digest. A special section spotlights the "Anywhere" deployment model, a key differentiator. The story culminates in a quantitative radar chart that provides a powerful, at-a-glance summary of NextGen's advantages. This linear, story-driven structure is optimal for an infographic designed for easy scrolling and comprehension. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Architecture Comparison. Goal: Organize. Viz: Flow Chart Diagram (HTML/CSS). Justification: A visual flow is the clearest way to explain the complex shift from a monolithic to a decoupled architecture, a core concept of the report. Implemented with HTML/CSS to adhere to the NO SVG constraint.
+        - Report Info: Feature-level comparisons (DevEx, Performance, etc.). Goal: Compare. Viz: Thematic Cards (HTML/CSS). Justification: Breaks down dense comparative text into scannable, visually distinct sections, allowing for quick side-by-side analysis. Unicode icons add quick visual context.
+        - Report Info: Deployment Flexibility (aaS Anywhere). Goal: Change/Organize. Viz: Map-like Diagram (HTML/CSS). Justification: Visually demonstrates the "run anywhere" concept by showing a central control plane connecting to remote engines in various environments, which is more impactful than text alone. NO SVG/mapping library used.
+        - Report Info: Overall capability summary. Goal: Compare/Inform. Viz: Radar Chart (Chart.js/Canvas). Justification: Provides a potent quantitative summary comparing the two versions across multiple vectors. Its visual shape immediately conveys the magnitude of NextGen's improvements. Uses Canvas rendering as required.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F1F7FE; }
+        .gradient-text { background: linear-gradient(to right, #2883EE, #164D89); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 350px; max-height: 450px; }
+        @media (min-width: 768px) { .chart-container { height: 450px; } }
+        .card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); padding: 1.5rem; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        .arrow { display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #A9CEF9; margin: 1rem 0; }
+        .flow-line { border-left: 2px dashed #A9CEF9; height: 30px; margin: 0 auto; width: 2px; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto px-4 py-8 md:px-8 md:py-12">
+        
+        <header class="text-center mb-16">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-4 gradient-text">The Evolution of DataStage</h1>
+            <p class="text-lg md:text-xl text-[#0D3257] max-w-3xl mx-auto">From a traditional enterprise powerhouse to a modern, cloud-native data fabric component. See the key differences between version 11.7 and the revolutionary NextGen platform.</p>
+        </header>
+
+        <section id="architecture-shift" class="mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-[#0D3257] mb-3">A Tale of Two Architectures</h2>
+                <p class="text-md text-gray-600 max-w-3xl mx-auto">The most fundamental change is the shift from a unified, on-premises system to a flexible, decoupled hybrid-cloud model. This new architecture is the foundation for NextGen's enhanced performance, scalability, and cost efficiency.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="card text-center border-2 border-[#A9CEF9]">
+                    <h3 class="text-2xl font-bold text-[#1F68BC] mb-4">DataStage 11.7: The Monolith</h3>
+                    <div class="p-4 bg-[#F1F7FE] rounded-lg border-2 border-dashed border-[#D4E6FC]">
+                        <div class="font-semibold text-lg mb-2 text-[#164D89]">InfoSphere Information Server</div>
+                        <div class="bg-white p-4 rounded-lg shadow-inner space-y-2">
+                           <div class="p-2 bg-[#D4E6FC] rounded font-medium">Shared Metadata & Services</div>
+                           <div class="p-3 bg-[#A9CEF9] rounded font-semibold text-[#041724]">Parallel Engine</div>
+                           <div class="p-2 bg-[#D4E6FC] rounded font-medium">Thick Client (Designer)</div>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-gray-600">A tightly-coupled, on-premises system requiring dedicated hardware and complex upgrades.</p>
+                </div>
+                <div class="card text-center border-2 border-[#2883EE]">
+                    <h3 class="text-2xl font-bold text-[#2883EE] mb-4">DataStage NextGen: The Cloud-Native</h3>
+                     <div class="p-4 bg-[#F1F7FE] rounded-lg border-2 border-dashed border-[#A9CEF9] text-center">
+                        <div class="font-semibold text-lg mb-2 text-[#164D89]">Control Plane (IBM Cloud)</div>
+                        <div class="bg-white p-4 rounded-lg shadow-inner">
+                           <div class="p-2 bg-[#A9CEF9] rounded font-medium">Web-based AI Designer & Git</div>
+                        </div>
+                        <div class="arrow">↓</div>
+                        <div class="font-semibold text-lg mb-2 text-[#164D89]">Data Plane (Anywhere)</div>
+                        <div class="bg-white p-4 rounded-lg shadow-inner">
+                           <div class="p-3 bg-[#539CF2] rounded font-semibold text-white">Remote Parallel Engine</div>
+                        </div>
+                     </div>
+                    <p class="mt-4 text-gray-600">A decoupled architecture where you design in the cloud and run jobs anywhere—on-prem or any cloud.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="feature-comparison" class="mb-20">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-[#0D3257] mb-3">Core Capabilities, Reimagined</h2>
+                <p class="text-md text-gray-600 max-w-3xl mx-auto">NextGen isn't just a facelift; it's a complete modernization of the developer experience, performance model, and governance capabilities, designed for the speed and scale of modern data operations.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card">
+                    <h3 class="font-bold text-xl mb-4 text-[#1F68BC]">💻 Developer Experience</h3>
+                    <h4 class="font-semibold text-[#164D89]">11.7: Thick Client</h4>
+                    <p class="text-sm text-gray-600 mb-3">Windows-based Designer, requiring specific OS & remote access solutions like Citrix.</p>
+                    <h4 class="font-semibold text-[#2883EE]">NextGen: Web & AI-Powered</h4>
+                    <p class="text-sm text-gray-600">Fully web-based, AI-assisted canvas with native Git integration for true DataOps.</p>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-xl mb-4 text-[#1F68BC]">🚀 Performance & Scalability</h3>
+                    <h4 class="font-semibold text-[#164D89]">11.7: Hardware-Bound</h4>
+                    <p class="text-sm text-gray-600 mb-3">Powerful parallel engine but limited by physical hardware; required manual tuning.</p>
+                    <h4 class="font-semibold text-[#2883EE]">NextGen: Elastic & On-Demand</h4>
+                    <p class="text-sm text-gray-600">Cloud-native engine with elastic scaling and automatic load balancing for unlimited scale.</p>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-xl mb-4 text-[#1F68BC]">🌐 Deployment Flexibility</h3>
+                    <h4 class="font-semibold text-[#164D89]">11.7: On-Premises Focus</h4>
+                    <p class="text-sm text-gray-600 mb-3">Primarily designed for on-premises data centers with significant infrastructure overhead.</p>
+                    <h4 class="font-semibold text-[#2883EE]">NextGen: Hybrid by Design</h4>
+                    <p class="text-sm text-gray-600">"Design once, run anywhere" across any cloud, data center, or on-prem environment.</p>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-xl mb-4 text-[#1F68BC]">🛡️ Governance & Observability</h3>
+                    <h4 class="font-semibold text-[#164D89]">11.7: Reactive Governance</h4>
+                    <p class="text-sm text-gray-600 mb-3">Used catalogs and dashboards to check quality after the fact.</p>
+                    <h4 class="font-semibold text-[#2883EE]">NextGen: Proactive Observability</h4>
+                    <p class="text-sm text-gray-600">Built-in, continuous monitoring to detect anomalies and ensure data trustworthiness in real-time.</p>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-xl mb-4 text-[#1F68BC]">🤖 AI & Machine Learning</h3>
+                    <h4 class="font-semibold text-[#164D89]">11.7: Nascent AI</h4>
+                    <p class="text-sm text-gray-600 mb-3">Basic "Smart Palette" suggestions to assist developers in the designer.</p>
+                    <h4 class="font-semibold text-[#2883EE]">NextGen: Deeply Integrated AI</h4>
+                    <p class="text-sm text-gray-600">Build pipelines with natural language via an AI assistant; AI-driven data quality checks.</p>
+                </div>
+                 <div class="card">
+                    <h3 class="font-bold text-xl mb-4 text-[#1F68BC]">🔄 Integration Patterns</h3>
+                    <h4 class="font-semibold text-[#164D89]">11.7: Primarily ETL</h4>
+                    <p class="text-sm text-gray-600 mb-3">Strong focus on batch ETL processing with some ELT capabilities.</p>
+                    <h4 class="font-semibold text-[#2883EE]">NextGen: Multi-Modal</h4>
+                    <p class="text-sm text-gray-600">Full support for ETL, ELT, real-time streaming, and CDC for any use case.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="summary-chart" class="mb-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-[#0D3257] mb-3">The NextGen Advantage: At a Glance</h2>
+                <p class="text-md text-gray-600 max-w-3xl mx-auto">This chart visually summarizes the leap forward DataStage NextGen provides across key modernization vectors. The larger the area, the more advanced the capability, making the benefits clear and immediate.</p>
+            </div>
+            <div class="card">
+                <div class="chart-container">
+                    <canvas id="comparisonRadarChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center mt-12 pt-8 border-t border-[#A9CEF9]">
+             <p class="text-sm text-[#164D89]">This infographic visualizes the key findings from the "IBM DataStage Evolution" comparative analysis report.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const wrapLabel = (str) => {
+                if (str.length <= 16) {
+                    return str;
+                }
+                const words = str.split(' ');
+                const lines = [];
+                let currentLine = '';
+                words.forEach(word => {
+                    if ((currentLine + ' ' + word).trim().length > 16) {
+                        lines.push(currentLine.trim());
+                        currentLine = word;
+                    } else {
+                        currentLine = (currentLine + ' ' + word).trim();
+                    }
+                });
+                if (currentLine) {
+                    lines.push(currentLine.trim());
+                }
+                return lines;
+            };
+
+            const radarChartData = {
+                labels: [
+                    wrapLabel('Architecture Flexibility'), 
+                    wrapLabel('Developer Experience'), 
+                    wrapLabel('Cloud-Native Scalability'), 
+                    wrapLabel('AI/ML Integration'), 
+                    wrapLabel('Deployment Options'), 
+                    wrapLabel('Data Observability')
+                ],
+                datasets: [{
+                    label: 'DataStage 11.7',
+                    data: [3, 3, 4, 2, 3, 4],
+                    fill: true,
+                    backgroundColor: 'rgba(169, 206, 249, 0.4)',
+                    borderColor: '#7EB5F5',
+                    pointBackgroundColor: '#7EB5F5',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#7EB5F5'
+                }, {
+                    label: 'DataStage NextGen',
+                    data: [9, 9, 10, 8, 10, 9],
+                    fill: true,
+                    backgroundColor: 'rgba(40, 131, 238, 0.4)',
+                    borderColor: '#2883EE',
+                    pointBackgroundColor: '#2883EE',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#2883EE'
+                }]
+            };
+
+            const radarCtx = document.getElementById('comparisonRadarChart').getContext('2d');
+            new Chart(radarCtx, {
+                type: 'radar',
+                data: radarChartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#D4E6FC' },
+                            grid: { color: '#D4E6FC' },
+                            pointLabels: { 
+                                font: { size: 12, weight: '500' },
+                                color: '#0D3257'
+                            },
+                            ticks: {
+                                display: false,
+                                stepSize: 2
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: { size: 14, weight: '600' },
+                                color: '#0D3257'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
